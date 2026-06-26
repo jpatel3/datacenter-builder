@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Center Builder — Playground</title>
+    <style>
+      :root {
+        --bg: #0f1419; --panel: #1a212b; --panel2: #222c38; --line: #2d3a48;
+        --text: #e6edf3; --muted: #8b98a8; --accent: #4ea1ff; --ok: #3fb950;
+        --warn: #d29922; --err: #f85149;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      header { padding: 16px 24px; border-bottom: 1px solid var(--line); }
+      header h1 { margin: 0; font-size: 18px; }
+      header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+      main { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 16px; padding: 16px 24px; align-items: start; }
+      @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+      .panel h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+      .cat { margin-bottom: 12px; }
+      .cat h3 { margin: 0 0 6px; font-size: 12px; color: var(--accent); }
+      button.add {
+        display: block; width: 100%; text-align: left; cursor: pointer; margin: 4px 0;
+        background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+        border-radius: 7px; padding: 7px 10px;
+      }
+      button.add:hover { border-color: var(--accent); }
+      button.add small { color: var(--muted); float: right; font-variant-numeric: tabular-nums; }
+      .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 6px; }
+      .row:nth-child(odd) { background: var(--panel2); }
+      .row button { background: none; border: none; color: var(--err); cursor: pointer; font-size: 15px; }
+      .empty { color: var(--muted); font-style: italic; padding: 6px; }
+      select { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 8px; }
+      .metric { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--line); }
+      .metric span:last-child { font-variant-numeric: tabular-nums; }
+      .sub { color: var(--muted); font-size: 12px; }
+      .viol { padding: 7px 10px; border-radius: 7px; margin: 5px 0; font-size: 13px; }
+      .viol.error { background: rgba(248,81,73,.12); border: 1px solid var(--err); }
+      .viol.warning { background: rgba(210,153,34,.12); border: 1px solid var(--warn); }
+      .result { padding: 12px; border-radius: 9px; margin-bottom: 12px; font-size: 15px; font-weight: 600; }
+      .result.pass { background: rgba(63,185,80,.14); border: 1px solid var(--ok); }
+      .result.fail { background: rgba(248,81,73,.14); border: 1px solid var(--err); }
+      .result .sub { font-weight: 400; }
+      code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Data Center Builder — Playground</h1>
+      <p>Add parts on the left, pick a goal in the middle, and watch what your data center can actually do. Power is auto-wired for you in this early demo.</p>
+    </header>
+    <main>
+      <section class="panel"><h2>Parts shelf</h2><div id="shelf"></div></section>
+      <section class="panel">
+        <h2>Your build</h2>
+        <div id="build"></div>
+        <div style="margin-top:14px">
+          <h2>Goal</h2>
+          <select id="scenario"></select>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Readout</h2>
+        <div id="result"></div>
+        <div id="metrics"></div>
+        <div id="violations" style="margin-top:12px"></div>
+        <p id="disclaimer" class="sub" style="margin-top:14px"></p>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

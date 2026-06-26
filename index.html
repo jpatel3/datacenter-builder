@@ -47,22 +47,40 @@
       .result.fail { background: rgba(248,81,73,.14); border: 1px solid var(--err); }
       .result .sub { font-weight: 400; }
       code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+      button.mode { background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 6px 14px; cursor: pointer; margin-right: 6px; }
+      button.mode.active { background: var(--accent); border-color: var(--accent); color: #04121f; font-weight: 600; }
+      .lesson { background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; padding: 12px; }
+      .lesson .kind { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); }
+      .lesson h3 { margin: 4px 0 8px; font-size: 16px; }
+      .lesson .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .lesson button { background: var(--accent); border: none; color: #04121f; font-weight: 600; border-radius: 7px; padding: 8px 14px; cursor: pointer; }
+      .lesson button:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+      .lesson button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
+      .hint { margin-top: 10px; color: var(--warn); font-size: 13px; }
+      .quiz button { display:block; width:100%; text-align:left; background: var(--panel); border:1px solid var(--line); color: var(--text); font-weight: 400; margin: 4px 0; }
+      .done { color: var(--ok); font-weight: 600; }
     </style>
   </head>
   <body>
     <header>
       <h1>Data Center Builder — Playground</h1>
       <p>Add parts on the left, pick a goal in the middle, and watch what your data center can actually do. Power is auto-wired for you in this early demo.</p>
+      <div style="margin-top:10px">
+        <button id="mode-learn" class="mode">Learn</button>
+        <button id="mode-sandbox" class="mode">Sandbox</button>
+        <span id="progress" class="sub" style="margin-left:10px"></span>
+      </div>
     </header>
     <main>
       <section class="panel"><h2>Parts shelf</h2><div id="shelf"></div></section>
       <section class="panel">
         <h2>Your build</h2>
         <div id="build"></div>
-        <div style="margin-top:14px">
+        <div id="scenario-wrap" style="margin-top:14px">
           <h2>Goal</h2>
           <select id="scenario"></select>
         </div>
+        <div id="lesson" class="lesson" style="margin-top:14px"></div>
       </section>
       <section class="panel">
         <h2>Readout</h2>

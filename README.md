@@ -8,10 +8,13 @@ Aimed at college / early-career tech learners. Numbers and vendor names are real
 
 Early development. Building in subsystems:
 
-1. **Simulation core** — ✅ implemented (this commit). Headless, deterministic engine + component/pricing catalog.
-2. Game canvas + building UX (isometric 2D) — planned.
-3. Curriculum / campaign (guided lessons + sandbox) — designed.
-4. Accounts + persistence + sharing (Supabase) — designed.
+1. **Simulation core** — ✅ implemented. Headless, deterministic engine + component/pricing catalog.
+2. **Playground UI (Vite)** — ✅ implemented. Add parts, pick a scenario, watch live metrics. `npm run dev`.
+3. **Curriculum (Modules 1–3)** — ✅ implemented. Guided "Learn" mode (Teach/Task/Challenge/Reflect), component unlocks, bottleneck-keyed hints, localStorage progress; plus free "Sandbox" mode.
+4. Isometric game canvas (the "Minecraft feel") — planned.
+5. Accounts + persistence + sharing (Supabase) — designed.
+
+Run `npm run dev` and open the local URL. **Learn** mode walks you from "your first chip" through power/cooling to "why training needs a network." **Sandbox** unlocks every part for free building (Serve ChatGPT, Serve Midjourney, Train a model).
 
 See `docs/superpowers/specs/` for designs and `docs/superpowers/plans/` for implementation plans.
 

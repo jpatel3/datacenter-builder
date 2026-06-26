@@ -42,7 +42,7 @@ College students and early-career tech people. Implications:
 | 2 | **Playground UI** (Vite) — shelf, build list, scenario, live readout | ✅ Built | — |
 | 3 | **Curriculum (Modules 1–3)** — guided Learn mode | ✅ Built (16 tests) | `specs/2026-06-26-curriculum-and-sharing-design.md`, `plans/2026-06-26-curriculum-modules-1-3.md` |
 | 3a | **Component visuals** — inline SVG schematic icons | ✅ Built | (this PRD §7) |
-| 4 | **UI enhancements** — progress bar, nav, infra board, part details | 🔜 Next (design below) | `specs/2026-06-26-ui-enhancements-design.md` (to write) |
+| 4 | **UI enhancements** — progress bar, nav, infra board, part details | 🔜 Spec'd, ready to build | `specs/2026-06-26-ui-enhancements-design.md` |
 | 5 | **Curriculum Modules 4–6** — chip choice, cost, real builds finale | 📋 Designed | curriculum spec |
 | 6 | **Isometric game canvas** — the "Minecraft feel" build surface | 📋 Planned | — |
 | 7 | **Accounts + save/share** — Supabase social sign-in, public link + fork | 📋 Designed | curriculum-and-sharing spec |
@@ -70,11 +70,11 @@ Brainstormed and decided; to be written up as a spec then implemented.
 3. **Infra board:** a **schematic flow diagram** of the build — both a picture and a live diagnostic.
    - Color-coded flows: ⚡ power = yellow, network = blue, heat = red.
    - Nodes/lines turn red on a matching problem (power deficit → power node red; overheating → cooling red; un-clustered chips → network link dashed-red).
-   - **Node granularity: grouped by type** (Power / Compute / Network / Cooling, each with a count + key stat) — *proposed default, pending final confirmation* (alternatives: per-rack, per-component).
+   - **Node granularity: grouped by type** (Power / Compute / Network / Cooling, each with a count + key stat) — ✅ confirmed.
 4. **Part details:** an **ⓘ button** on each shelf item opens a **side detail panel** with a plain-language description, key specs, cost, and a **"Learn more" link**. The main click still adds the part.
-   - **Link source: Wikipedia/reference pages** + author blurbs — *proposed default, pending final confirmation* (alternatives: vendor pages; no links). Requires adding `description` + `learnMoreUrl` to catalog entries.
+   - **Link source: Wikipedia/reference pages** + author blurbs — ✅ confirmed. Requires adding `description` + `learnMoreUrl` to catalog entries.
 
-**Two items above marked "pending confirmation" are the only open product questions before this subsystem's spec is finalized.**
+Full design: `specs/2026-06-26-ui-enhancements-design.md`. No open product questions remain for this subsystem.
 
 ## 8. Roadmap (suggested order)
 

@@ -77,7 +77,13 @@
       .step { font-size: 12px; color: var(--accent); margin-top: 2px; }
       .bar { height: 5px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; margin: 6px 0 10px; overflow: hidden; }
       .bar .fill { height: 100%; background: var(--accent); }
-      .navfoot { display: flex; align-items: center; margin-top: 14px; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+      #right-panel { display: flex; flex-direction: column; min-height: calc(100vh - 150px); }
+      #lesson { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+      .lesson-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+      .lesson-head select { width: 100%; }
+      .lesson-head .coursebar { max-width: none; margin-top: 0; }
+      .lesson-body { flex: 1; overflow-y: auto; min-height: 0; }
+      .navfoot { display: flex; align-items: center; margin-top: auto; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
       .navfoot button { background: var(--accent); border: none; color: #04121f; font-weight: 600; border-radius: 7px; padding: 8px 14px; cursor: pointer; }
       .navfoot button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
       .navfoot button:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
@@ -111,12 +117,15 @@
       <div style="margin-top:10px">
         <button id="mode-learn" class="mode">Learn</button>
         <button id="mode-sandbox" class="mode">Sandbox</button>
-        <span id="progress" class="sub" style="margin-left:10px"></span>
       </div>
-      <div class="coursebar"><div id="coursebar-fill" class="fill"></div></div>
     </header>
     <main>
-      <section class="panel"><h2>Parts shelf</h2><div id="shelf"></div></section>
+      <section class="panel">
+        <h2>Parts shelf</h2>
+        <div id="shelf"></div>
+        <h2 style="margin-top:16px">Your build</h2>
+        <div id="build"></div>
+      </section>
       <section class="panel">
         <h2>Infrastructure</h2>
         <div id="board"></div>
@@ -125,14 +134,12 @@
         <div id="violations"></div>
         <p id="disclaimer" class="sub" style="margin-top:14px"></p>
       </section>
-      <section class="panel">
+      <section class="panel" id="right-panel">
         <div id="scenario-wrap">
           <h2>Goal</h2>
           <select id="scenario"></select>
         </div>
         <div id="lesson" class="lesson"></div>
-        <h2 style="margin-top:16px">Your build</h2>
-        <div id="build"></div>
       </section>
     </main>
     <div id="detail-backdrop"></div>

@@ -157,27 +157,66 @@ function renderScenarioSelect() {
   el.value = scenarioId;
 }
 
+function lessonStarts(): { start: number; label: string; reachable: boolean }[] {
+  const f = frontierIndex();
+  const out: { start: number; label: string; reachable: boolean }[] = [];
+  let idx = 0;
+  for (const m of course.modules) {
+    for (const l of m.lessons) {
+      out.push({ start: idx, label: `${m.title} › ${l.title}`, reachable: idx <= f });
+      idx += l.blocks.length;
+    }
+  }
+  return out;
+}
+function currentLessonStart(): number {
+  let sel = 0;
+  for (const s of lessonStarts()) if (s.start <= viewIndex) sel = s.start;
+  return sel;
+}
+function lessonHeadHtml(): string {
+  const pct = courseProgressPct(course, progress);
+  const opts = lessonStarts()
+    .map((s) => `<option value="${s.start}"${s.reachable ? "" : " disabled"}>${s.label}</option>`)
+    .join("");
+  return `<div class="lesson-head">
+    <select id="lesson-jump" title="Jump to a lesson">${opts}</select>
+    <div class="coursebar" title="Course progress: ${pct}%"><div class="fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+function wireJump() {
+  const sel = document.getElementById("lesson-jump") as HTMLSelectElement | null;
+  if (!sel) return;
+  sel.value = String(currentLessonStart());
+  sel.onchange = () => { viewIndex = Number(sel.value); lastHint = ""; render(); };
+}
+
 function renderLesson() {
   const el = $("lesson");
   const all = allBlocks();
   const f = frontierIndex();
   clampView();
+  const head = lessonHeadHtml();
+
   if (f >= all.length) {
-    el.innerHTML = `<div class="kind">Course complete</div><h3>🎉 You finished the foundations!</h3>
-      <p class="sub">You've covered chips, power, cooling, and why training needs a network. Jump into Sandbox to build freely.</p>
-      <div class="navfoot"><button id="to-sandbox">Open Sandbox</button></div>`;
+    el.innerHTML = head +
+      `<div class="lesson-body"><div class="kind">Course complete</div><h3>🎉 You finished the course!</h3>
+       <p class="sub">You've gone from a single chip to training clusters and affordable serving. Explore freely in Sandbox, or revisit any lesson above.</p></div>
+       <div class="navfoot"><span style="flex:1"></span><button id="to-sandbox">Open Sandbox →</button></div>`;
+    wireJump();
     ($("to-sandbox") as HTMLButtonElement).onclick = () => setMode("sandbox");
     return;
   }
+
   const block = all[viewIndex];
   const pos = locateBlock(course, block.id)!;
   const reviewing = viewIndex < f;
-  const fillPct = ((pos.stepIndex + 1) / pos.stepCount) * 100;
+  const stepPct = ((pos.stepIndex + 1) / pos.stepCount) * 100;
 
-  let html = `<div class="crumb">${pos.moduleTitle} › ${pos.lessonTitle}</div>`;
-  html += `<div class="step">Step ${pos.stepIndex + 1} of ${pos.stepCount}${reviewing ? " · review" : ""}</div>`;
-  html += `<div class="bar"><div class="fill" style="width:${fillPct}%"></div></div>`;
-  html += `<div class="kind">${block.type}</div><h3>${block.title}</h3><p>${block.body}</p>`;
+  let body = `<div class="crumb">${pos.moduleTitle} › ${pos.lessonTitle}</div>`;
+  body += `<div class="step">Step ${pos.stepIndex + 1} of ${pos.stepCount}${reviewing ? " · review" : ""}</div>`;
+  body += `<div class="bar"><div class="fill" style="width:${stepPct}%"></div></div>`;
+  body += `<div class="kind">${block.type}</div><h3>${block.title}</h3><p>${block.body}</p>`;
 
   if (block.unlocks?.length) {
     const cards = block.unlocks
@@ -185,12 +224,12 @@ function renderLesson() {
       .filter((t): t is NonNullable<typeof t> => !!t)
       .map((t) => `<div class="u"><span class="ico">${iconFor(t)}</span>${t.name}</div>`)
       .join("");
-    if (cards) html += `<div class="unlocked-row">${cards}</div>`;
+    if (cards) body += `<div class="unlocked-row">${cards}</div>`;
   }
 
   if (block.type === "reflect" && block.quiz) {
     const answered = satisfied(block);
-    html += `<div class="quiz">` + block.quiz.options.map((o, i) => {
+    body += `<div class="quiz">` + block.quiz.options.map((o, i) => {
       const correct = i === block.quiz!.answerIndex;
       const mark = answered && correct ? " ✓" : "";
       return `<button data-i="${i}"${answered ? " disabled" : ""}>${o}${mark}</button>`;
@@ -198,20 +237,22 @@ function renderLesson() {
   }
 
   if ((block.type === "task" || block.type === "challenge") && !reviewing && satisfied(block)) {
-    html += `<div class="done">✓ requirement met</div>`;
+    body += `<div class="done">✓ requirement met</div>`;
   }
-  if (lastHint) html += `<div class="hint">💡 ${lastHint}</div>`;
+  if (lastHint) body += `<div class="hint">💡 ${lastHint}</div>`;
 
   const nextEnabled = reviewing || satisfied(block);
   const showHint = (block.type === "task" || block.type === "challenge") && !reviewing;
-  html += `<div class="navfoot">
+  const foot = `<div class="navfoot">
     <button class="ghost" id="nav-prev"${viewIndex === 0 ? " disabled" : ""}>← Previous</button>
     <span style="flex:1"></span>
     ${showHint ? `<button class="ghost" id="nav-hint">Hint</button>` : ""}
     <button id="nav-next"${nextEnabled ? "" : " disabled"}>Next →</button>
   </div>`;
-  el.innerHTML = html;
 
+  el.innerHTML = head + `<div class="lesson-body">${body}</div>` + foot;
+
+  wireJump();
   if (block.type === "reflect" && block.quiz) {
     el.querySelectorAll<HTMLButtonElement>(".quiz button").forEach((qb) => {
       qb.onclick = () => {
@@ -371,9 +412,6 @@ function setMode(m: "learn" | "sandbox") { mode = m; saveMode(); lastHint = ""; 
 function renderModeButtons() {
   ($("mode-learn") as HTMLButtonElement).className = "mode" + (mode === "learn" ? " active" : "");
   ($("mode-sandbox") as HTMLButtonElement).className = "mode" + (mode === "sandbox" ? " active" : "");
-  const pct = mode === "learn" ? courseProgressPct(course, progress) : 0;
-  $("progress").textContent = mode === "learn" ? `Progress: ${courseProgressPct(course, progress)}%` : "";
-  ($("coursebar-fill") as HTMLElement).style.width = `${pct}%`;
 }
 
 function render() {

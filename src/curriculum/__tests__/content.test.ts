@@ -7,8 +7,8 @@ describe("course content", () => {
   const blocks = flattenBlocks(course);
   const catalogIds = new Set(catalog.map((c) => c.id));
 
-  it("has Modules 1–3", () => {
-    expect(course.modules.map((m) => m.id)).toEqual(["m1", "m2", "m3"]);
+  it("has Modules 1–6", () => {
+    expect(course.modules.map((m) => m.id)).toEqual(["m1", "m2", "m3", "m4", "m5", "m6"]);
   });
 
   it("every unlocked component id exists in the catalog", () => {

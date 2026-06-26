@@ -146,5 +146,198 @@ export const course: Course = {
         },
       ],
     },
+    {
+      id: "m4",
+      title: "Pick the right chip",
+      lessons: [
+        {
+          id: "m4l1",
+          title: "Chips have specialties",
+          blocks: [
+            {
+              id: "m4l1b1",
+              type: "teach",
+              title: "Different chips, different jobs",
+              body: "Not every accelerator is the same. Some are tuned for training, some for serving (inference). Use one off its sweet spot and it still works — just slower and pricier. Watch for the ⚠ chip-mismatch hint.",
+              unlocks: ["gpu-amd-mi300x", "acc-aws-trainium", "acc-aws-inferentia", "acc-google-tpu"],
+            },
+            {
+              id: "m4l1b2",
+              type: "challenge",
+              title: "Serve efficiently",
+              body: "Serve 4,000 text queries/sec. Try AWS Inferentia (built for serving) with power and cooling. If you reach for a training chip, you'll see why it's the wrong tool.",
+              workload: { type: "inference", modality: "text", model: "serve", qpsTarget: 4000 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "power", text: "Add power capacity." },
+                { when: "cooling", text: "Add cooling." },
+                { when: "compute", text: "Add more inference chips — Inferentia serves a lot per chip." },
+              ],
+            },
+            {
+              id: "m4l1b3",
+              type: "reflect",
+              title: "Quick check",
+              body: "You need to SERVE a model to lots of users. Which chip fits best?",
+              quiz: { options: ["AWS Trainium (training-tuned)", "AWS Inferentia (inference-tuned)", "Neither can serve"], answerIndex: 1 },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "m5",
+      title: "Cost & affordability",
+      lessons: [
+        {
+          id: "m5l1",
+          title: "What it costs to run",
+          blocks: [
+            {
+              id: "m5l1b1",
+              type: "teach",
+              title: "Capex vs opex",
+              body: "Two costs matter: capex (buying the gear) and opex (the monthly electric bill to run and cool it). For serving, the number people compare is cost per million tokens.",
+            },
+            {
+              id: "m5l1b2",
+              type: "challenge",
+              title: "Serve under a budget",
+              body: "Serve 4,000 text queries/sec at no more than $0.20 per million tokens. Cheaper, inference-tuned chips win here — watch the 'Cost per M tokens' readout.",
+              workload: { type: "inference", modality: "text", model: "budget", qpsTarget: 4000, maxCostPerUnit: 0.2 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "affordability", text: "Too pricey per token — swap to cheaper, inference-tuned chips like Inferentia." },
+                { when: "compute", text: "Add more chips to hit the throughput." },
+                { when: "power", text: "Add power." },
+                { when: "cooling", text: "Add cooling." },
+              ],
+            },
+            {
+              id: "m5l1b3",
+              type: "reflect",
+              title: "Quick check",
+              body: "'Cost per million tokens' mainly tells you…",
+              quiz: { options: ["How fast the model is", "How affordable it is to serve", "How big the model is"], answerIndex: 1 },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "m6",
+      title: "Real builds",
+      lessons: [
+        {
+          id: "m6l1",
+          title: "Serve ChatGPT",
+          blocks: [
+            {
+              id: "m6l1b1",
+              type: "teach",
+              title: "Powering a chatbot",
+              body: "Apps like ChatGPT answer millions of text questions. That's inference at scale — lots of throughput, served affordably.",
+            },
+            {
+              id: "m6l1b2",
+              type: "challenge",
+              title: "5,000 questions a second",
+              body: "Serve 5,000 text queries/sec, with power and cooling in place.",
+              workload: { type: "inference", modality: "text", model: "ChatGPT", qpsTarget: 5000 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "compute", text: "Add more chips." },
+                { when: "power", text: "Add power." },
+                { when: "cooling", text: "Add cooling." },
+              ],
+            },
+          ],
+        },
+        {
+          id: "m6l2",
+          title: "Make images (Midjourney)",
+          blocks: [
+            {
+              id: "m6l2b1",
+              type: "teach",
+              title: "Images cost more",
+              body: "Image generators like Midjourney do far more compute per output than a text reply — so the same hardware serves far fewer images per second.",
+            },
+            {
+              id: "m6l2b2",
+              type: "challenge",
+              title: "200 images a second",
+              body: "Serve an image workload at 200 images/sec. Notice how much more hardware this takes than text.",
+              workload: { type: "inference", modality: "image", model: "Midjourney", qpsTarget: 200 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "compute", text: "Images are heavy — add more chips." },
+                { when: "power", text: "Add power." },
+                { when: "cooling", text: "Add cooling." },
+              ],
+            },
+          ],
+        },
+        {
+          id: "m6l3",
+          title: "Do more with less (DeepSeek)",
+          blocks: [
+            {
+              id: "m6l3b1",
+              type: "teach",
+              title: "The affordability race",
+              body: "DeepSeek made headlines for matching top models far more cheaply. The game isn't just raw power — it's cost per token.",
+            },
+            {
+              id: "m6l3b2",
+              type: "challenge",
+              title: "Beat the cost bar",
+              body: "Serve 4,000 text queries/sec at or below $0.18 per million tokens. Pick your chips wisely.",
+              workload: { type: "inference", modality: "text", model: "DeepSeek", qpsTarget: 4000, maxCostPerUnit: 0.18 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "affordability", text: "Still too pricey — lean on cheap, inference-tuned chips." },
+                { when: "compute", text: "Add chips to hit throughput." },
+                { when: "power", text: "Add power." },
+                { when: "cooling", text: "Add cooling." },
+              ],
+            },
+          ],
+        },
+        {
+          id: "m6l4",
+          title: "Train your own (Llama)",
+          blocks: [
+            {
+              id: "m6l4b1",
+              type: "teach",
+              title: "Training needs a cluster",
+              body: "Training a model like Llama means many chips working as one — which needs fast networking, plenty of power, and cooling.",
+            },
+            {
+              id: "m6l4b2",
+              type: "challenge",
+              title: "Train a model",
+              body: "Build a connected cluster (4+ training-capable chips + a Spine Switch + power + cooling) and hit the training goal.",
+              workload: { type: "training", modality: "text", modelSizeB: 8, targetThroughput: 2500 },
+              successCheck: { require: "workloadPassed" },
+              hints: [
+                { when: "network", text: "Add a Spine Switch so the chips cluster." },
+                { when: "compute", text: "Add more training chips." },
+                { when: "power", text: "Add power." },
+                { when: "cooling", text: "Add cooling." },
+              ],
+            },
+            {
+              id: "m6l4b3",
+              type: "reflect",
+              title: "You did it!",
+              body: "You've built serving and training infrastructure across text and images. What mattered most for affordability?",
+              quiz: { options: ["The logo on the chip", "Matching the chip to the job and watching cost per token", "Using the most expensive parts"], answerIndex: 1 },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

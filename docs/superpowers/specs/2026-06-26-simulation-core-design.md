@@ -134,11 +134,11 @@ interface Metrics {
     capex: number;
     opexPerMonth: number;              // power (drawKW * 730h * $/kWh) + cooling + fixed
     dollarsPerTrainingUnit: number;    // efficiency metric for comparisons
-    costPerMillionTokens: number;      // INFERENCE AFFORDABILITY — first-class metric
+    costPerMillionTokens: number;      // INFERENCE AFFORDABILITY — first-class metric, USD.
                                        // (amortized capex + opex) / token throughput.
-                                       // Currency-agnostic; UI can show $/₹. This is the
-                                       // number real-world stories (e.g. BharatGen ₹5 vs
-                                       // DeepSeek ₹13 per M tokens) are judged on.
+                                       // All engine costs are USD; narrative may cite a
+                                       // source's original currency for flavor (e.g.
+                                       // BharatGen ₹5 vs ~₹13/M tokens) but the metric is $.
   };
   network: {
     bisectionGbps: number;             // simplified aggregate interconnect
@@ -182,7 +182,14 @@ interface Result {
 
 The campaign (subsystem 3) supplies the workload and a budget; this function returns pass/fail + the limiting bottleneck, which drives guided-mode hints and grading.
 
-**Real-world-inspired scenarios.** Because the engine outputs `costPerMillionTokens` and accepts `gpuBudget` / `maxCostPerMillionTokens` constraints, campaign challenges can be modeled directly on real targets. Example seed scenario: *"BharatGen — train a ~1T-parameter model within a ~2,400-GPU budget, then serve inference at ≤ ₹5 per million tokens (beating a ~₹13 baseline)."* Affordability — not just scale — becomes a recurring, gradeable teaching theme. These scenarios live in subsystem 3 (curriculum); this subsystem only needs to expose the metrics and constraints that make them expressible, which the API above does.
+**Real-world-inspired scenarios.** Because the engine outputs `costPerMillionTokens` and accepts `gpuBudget` / `maxCostPerMillionTokens` constraints, campaign challenges can be modeled directly on real, named systems — a core teaching hook for this audience. Two complementary scenario flavors:
+
+- **"What does it take to train *this* model?"** — reverse-engineer the infrastructure behind a flagship model: roughly how many accelerators, of what kind, for how long, drawing how much power, at what cost, and *what physically goes in* (racks, interconnect, cooling, power). Good seed candidates: **GPT-3-class (~175B)**, **DeepSeek-V3** (its technical report publishes GPU-hours), and **Llama-class** models — all of which have published or well-estimated infra figures.
+- **Affordability targets** — e.g. *"BharatGen: train ~1T params within a ~2,400-GPU budget, then serve inference at the affordability frontier"* — beating a baseline cost-per-million-tokens.
+
+**Accuracy & honesty rule (applies to scenario data):** closed models (e.g. GPT-4o, Anthropic models) have no public training setup; their scenarios use **publicly reported or estimated figures, explicitly labeled "approximate / estimated."** Models with published details are preferred for the highest-credibility levels. Every scenario carries a citation/disclaimer field.
+
+These scenarios live in subsystem 3 (curriculum); this subsystem only needs to expose the metrics and constraints that make them expressible — which the API above does — and a catalog with **era-appropriate accelerators** (e.g. A100 for older training runs, H100/H200 for current) so the reconstructions are believable.
 
 ### 3.6 Public API (the interface other subsystems consume)
 
@@ -220,7 +227,7 @@ src/sim/__tests__/   // vitest unit tests
 ## 4. Success criteria for this subsystem
 
 1. `evaluateBuild` and `evaluateAgainstWorkload` are pure, deterministic, and exported from a single entry point.
-2. A seed catalog exists with at least: 2–3 accelerators, 1 CPU, 1 server, 1 rack, 2 power options, 2 cooling options, 1–2 switches, 1 space type — each with realistic-ballpark specs, vendor, and dated pricing + disclaimer.
+2. A seed catalog exists with at least: 2–3 accelerators spanning eras (e.g. an A100-class and an H100/H200-class part so historical and current training runs are both expressible), 1 CPU, 1 server, 1 rack, 2 power options, 2 cooling options, 1–2 switches, 1 space type — each with realistic-ballpark specs, vendor, and dated USD pricing + disclaimer.
 3. All seven violation codes are detectable and unit-tested.
 4. The training-vs-inference divergence is demonstrably modeled and asserted by a test, and `costPerMillionTokens` is computed and asserted (so affordability scenarios like BharatGen are expressible).
 5. Test suite passes with meaningful coverage of the relationships in §3.4.

@@ -106,7 +106,7 @@ export function buildFlowModel(build: Build, metrics: Metrics): FlowModel;
 
 **Rendering (in `src/main.ts`):** an inline SVG. Fixed, simple layout — Power left, Compute center, Network upper-right, Cooling lower-right. Each node is a rounded box containing its category icon (reuse `iconFor`-style art), label, and stat; alert nodes get a red border + the alert reason. Edges are lines colored by kind — ⚡ power = yellow (`#f2c744`), network = blue (`#4ea1ff`), heat = red (`#f85149`) — alert edges are dashed and red. A small legend maps color → flow.
 
-**Placement:** a new full-width `.panel` (`#board`) below the three working columns. Empty state: "Add parts to see your data center take shape."
+**Placement (revised 2026-06-26):** the board is the **visual hero, centered**. Three-column layout: a narrow **Parts shelf** (left), the **large infra board** (center) with a compact KPI strip + result + violations beneath it, and **Lesson/Scenario + Build list** (right). The readout is condensed from a 10-row table into compact wrapping **KPI chips** so it no longer dominates. Empty state: "Add parts to see your data center take shape." (Earlier draft placed the board full-width below the columns; that left it below the fold.)
 
 ## 5. Feature 4 — Part detail panel
 

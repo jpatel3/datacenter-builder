@@ -295,7 +295,7 @@ function renderReadout() {
     [`Cost ${perUnit}`, money(metrics.cost.costPerMillionTokens)],
     ["Footprint", `${fmt(metrics.space.usedSqM, 1)} m²`],
   ];
-  $("metrics").innerHTML = rows.map(([k, v]) => `<div class="metric"><span class="sub">${k}</span><span>${v}</span></div>`).join("");
+  $("metrics").innerHTML = rows.map(([k, v]) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
   const vEl = $("violations");
   vEl.innerHTML = !metrics.violations.length
     ? `<div class="sub">No issues. 🎉</div>`

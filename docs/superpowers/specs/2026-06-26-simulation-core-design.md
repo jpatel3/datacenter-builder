@@ -168,6 +168,7 @@ interface Violation {
 - **Modality (image vs text):** an image-generation workload multiplies per-output compute cost by a large factor versus text, so the same hardware serves far fewer images/sec than tokens/sec. This is what makes "running Midjourney" visibly heavier than "running ChatGPT."
 - **Chip specialization (soft, not hard):** effective throughput = raw spec × the matching efficiency multiplier (`trainEff`, `inferEff`, `imageEff`). A chip off its sweet spot still works but yields less per dollar and raises a `chip-mismatch` *warning* (not an error) naming a better-fit part. This is the "free choice + discover the mistake + learn why" mechanic — never a hard block.
 - **Cost:** capex = Σ capex; opex = energy (`drawKW × 730 × pricePerKWh`) + fixed opex. Efficiency metrics enable "GPU A vs GPU B per dollar" comparisons.
+- **Rack capacity:** `rack-overfull` is only raised once at least one rack is present and the mounted rack-units exceed total rack capacity. Rackless early-lesson builds (place a chip before a rack) are not flagged — a future "needs a rack" rule can be added in the curriculum layer if desired.
 
 ### 3.5 Workload evaluation — `evaluateAgainstWorkload(build, workload): Result`
 

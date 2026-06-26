@@ -344,15 +344,32 @@ function renderReadout() {
 }
 
 // ---- infra board ----
-const NODE_POS: Record<FlowNodeId, { x: number; y: number }> = {
+const NW = 150, NH = 60, VB_W = 600, VB_H = 230;
+const DEFAULT_POS: Record<FlowNodeId, { x: number; y: number }> = {
   power: { x: 8, y: 85 }, compute: { x: 225, y: 85 }, network: { x: 442, y: 18 }, cooling: { x: 442, y: 152 },
 };
-const NW = 150, NH = 60;
 const NODE_CAT: Record<FlowNodeId, Category> = {
   power: "power", compute: "accelerator", network: "network", cooling: "cooling",
 };
 const KIND_COLOR: Record<string, string> = { power: "#f2c744", network: "#4ea1ff", heat: "#f85149" };
-const center = (id: FlowNodeId) => ({ x: NODE_POS[id].x + NW / 2, y: NODE_POS[id].y + NH / 2 });
+
+function loadBoardPos(): Record<FlowNodeId, { x: number; y: number }> {
+  const def: Record<FlowNodeId, { x: number; y: number }> = {
+    power: { ...DEFAULT_POS.power }, compute: { ...DEFAULT_POS.compute },
+    network: { ...DEFAULT_POS.network }, cooling: { ...DEFAULT_POS.cooling },
+  };
+  try {
+    const raw = localStorage.getItem("dcb-board-pos");
+    if (raw) return { ...def, ...JSON.parse(raw) };
+  } catch {
+    /* ignore */
+  }
+  return def;
+}
+const boardPos = loadBoardPos();
+function saveBoardPos() { localStorage.setItem("dcb-board-pos", JSON.stringify(boardPos)); }
+const center = (id: FlowNodeId) => ({ x: boardPos[id].x + NW / 2, y: boardPos[id].y + NH / 2 });
+let dragging: { id: FlowNodeId; offX: number; offY: number } | null = null;
 
 function renderFlowSVG(model: FlowModel): string {
   const edges = model.edges.map((e) => {
@@ -362,17 +379,34 @@ function renderFlowSVG(model: FlowModel): string {
     return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="3"${dash}/>`;
   }).join("");
   const nodes = model.nodes.map((n) => {
-    const p = NODE_POS[n.id];
+    const p = boardPos[n.id];
     const border = n.status === "alert" ? "#f85149" : "#2d3a48";
     const alertText = n.alert ? `<text x="${p.x + 12}" y="${p.y + 52}" fill="#f85149" font-size="11">⚠ ${n.alert}</text>` : "";
-    return `
+    return `<g class="fnode" data-id="${n.id}" style="cursor:grab">
       <rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="9" fill="#222c38" stroke="${border}" stroke-width="2"/>
       <svg x="${p.x + 10}" y="${p.y + 9}" width="40" height="26" style="color:#c7d2de">${iconForCategory(NODE_CAT[n.id])}</svg>
       <text x="${p.x + 58}" y="${p.y + 20}" fill="#e6edf3" font-size="14" font-weight="600">${n.label}</text>
       <text x="${p.x + 58}" y="${p.y + 36}" fill="#8b98a8" font-size="11">${n.stat}</text>
-      ${alertText}`;
+      ${alertText}</g>`;
   }).join("");
-  return `<svg viewBox="0 0 600 230" width="100%" style="min-width:560px">${edges}${nodes}</svg>`;
+  return `<svg viewBox="0 0 ${VB_W} ${VB_H}" width="100%" style="min-width:560px; touch-action:none">${edges}${nodes}</svg>`;
+}
+
+function svgPoint(svg: SVGSVGElement, clientX: number, clientY: number) {
+  const r = svg.getBoundingClientRect();
+  return { x: (clientX - r.left) * (VB_W / r.width), y: (clientY - r.top) * (VB_H / r.height) };
+}
+function attachBoardDrag() {
+  const svg = $("board").querySelector("svg") as SVGSVGElement | null;
+  if (!svg) return;
+  svg.querySelectorAll<SVGGElement>(".fnode").forEach((g) => {
+    g.addEventListener("pointerdown", (e) => {
+      const id = g.dataset.id as FlowNodeId;
+      const p = svgPoint(svg, e.clientX, e.clientY);
+      dragging = { id, offX: p.x - boardPos[id].x, offY: p.y - boardPos[id].y };
+      e.preventDefault();
+    });
+  });
 }
 
 function renderBoard() {
@@ -380,7 +414,8 @@ function renderBoard() {
   const model = buildFlowModel(build, metricsForActive());
   if (!model.nodes.length) { el.innerHTML = `<div class="empty">Add parts to see your data center take shape.</div>`; return; }
   el.innerHTML = renderFlowSVG(model) +
-    `<div class="board-legend"><span class="legend-power">power</span><span class="legend-net">network</span><span class="legend-heat">heat</span><span style="color:#f85149">⚠ red = problem</span></div>`;
+    `<div class="board-legend"><span class="legend-power">power</span><span class="legend-net">network</span><span class="legend-heat">heat</span><span style="color:#f85149">⚠ red = problem</span><span style="margin-left:auto;color:var(--muted)">drag boxes to rearrange</span></div>`;
+  attachBoardDrag();
 }
 
 // ---- detail panel ----
@@ -423,6 +458,17 @@ function render() {
 ($("mode-sandbox") as HTMLButtonElement).onclick = () => setMode("sandbox");
 $("detail-backdrop").onclick = closeDetail;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDetail(); });
+document.addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const svg = $("board").querySelector("svg") as SVGSVGElement | null;
+  if (!svg) return;
+  const p = svgPoint(svg, e.clientX, e.clientY);
+  const x = Math.max(0, Math.min(VB_W - NW, p.x - dragging.offX));
+  const y = Math.max(0, Math.min(VB_H - NH, p.y - dragging.offY));
+  boardPos[dragging.id] = { x, y };
+  renderBoard();
+});
+document.addEventListener("pointerup", () => { if (dragging) { saveBoardPos(); dragging = null; } });
 $("disclaimer").textContent = `${PRICING_DISCLAIMER} Catalog updated ${LAST_UPDATED}.`;
 viewIndex = frontierIndex();
 render();

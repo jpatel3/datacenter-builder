@@ -45,7 +45,7 @@ College students and early-career tech people. Implications:
 | 4 | **UI enhancements** — progress bar, nav, infra board, part details | ✅ Built (63 tests total) | `specs/2026-06-26-ui-enhancements-design.md`, `plans/2026-06-26-ui-enhancements.md` |
 | 5 | **Curriculum Modules 4–6** — chip choice, cost, real builds finale (ChatGPT/Midjourney/DeepSeek/Llama) | ✅ Built | curriculum spec |
 | 5a | **Lesson UI polish** — full-height lesson panel, pinned footer nav, in-panel course bar, lesson-jump menu | ✅ Built | ui-enhancements spec |
-| 6 | **Movable infra components** — drag/arrange parts on the board | 🔜 Open question (drag nodes vs free-placement canvas) | — |
+| 6 | **Movable infra nodes** — drag the 4 grouped board nodes to rearrange; positions persist (localStorage) | ✅ Built | — |
 | 7 | **Isometric game canvas** — the "Minecraft feel" build surface | 📋 Planned | — |
 | 7 | **Accounts + save/share** — Supabase social sign-in, public link + fork | 📋 Designed | curriculum-and-sharing spec |
 

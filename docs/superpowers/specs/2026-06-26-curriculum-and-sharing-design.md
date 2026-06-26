@@ -10,6 +10,14 @@
 
 The curriculum is **declarative data layered on top of the sim engine.** Every guided-step completion check and every challenge grade calls the *same* `evaluateBuild` / `evaluateAgainstWorkload` from the simulation core. There is no second copy of the rules — the engine is the single source of truth, and lessons just reference its outputs.
 
+## 1a. Tone & pedagogy principles
+
+- **Plain language first.** Introduce a jargon term only *after* the player has felt the thing it names ("the chip got too hot to keep up" → *thermal throttling*). Every term has a one-line plain gloss.
+- **Simple → hard.** Each module adds exactly one new idea on top of the last. Early blocks are tiny and winnable in a minute.
+- **Discovery over instruction.** Prefer letting the player make a choice and see the result over telling them the answer up front. Recommendations exist but are opt-in ("show me a hint").
+- **Room to be wrong.** Sub-optimal choices are allowed and informative, not punished — the engine's warnings (e.g. `chip-mismatch`) explain *why* and suggest a fix. Errors are the lesson.
+- **Keep it fun.** Light, encouraging voice; relatable real-world hooks (ChatGPT, Midjourney, DeepSeek, Llama); small wins and visible progress.
+
 ## 2. Content hierarchy
 
 `Course → Module → Lesson → Block`. The **Block** is the atomic step in guided mode.
@@ -60,14 +68,20 @@ Because `evaluateAgainstWorkload` returns the limiting `bottleneck`, a stuck pla
 
 ## 3. Sample campaign progression
 
-1. **Anatomy of a server** — place GPU → CPU → server → rack; learn watts & heat.
+1. **Anatomy of a server** — place GPU → CPU → server → rack; learn watts & heat (plain words first).
 2. **Keep it alive** — power supply and cooling must meet demand; fix a power deficit, then overheating.
 3. **Make it a cluster** — add networking; experience the training-vs-inference divergence (identical accelerators, different interconnect → training throughput collapses, inference is fine).
-4. **Cost & affordability** — capex vs opex, $/M tokens; compare GPU A vs B per dollar.
-5. **Real builds** — reverse-engineer GPT-3-class and DeepSeek-V3 infrastructure; then the BharatGen affordability challenge. (Estimated figures labeled per the sim-core honesty rule.)
-6. **Sandbox unlocks** — open playground becomes available.
+4. **Pick the right chip** — drop NVIDIA / AMD / AWS Trainium / AWS Inferentia / Google TPU into the same job and discover their sweet spots via the `chip-mismatch` nudge (Trainium shines at training, Inferentia at serving). Free choice, gentle correction.
+5. **Cost & affordability** — capex vs opex, cost-per-query; compare two chips per dollar.
+6. **Real builds (the relatable finale)** — anchored on products players know:
+   - **ChatGPT** — serve text inference to a crowd (scaling, cost-per-query).
+   - **Midjourney / Stable Diffusion** — *image* generation; feel why each picture costs far more than a text reply (modality).
+   - **DeepSeek** — the affordability challenge: same capability, much lower cost-per-query ("do more with less").
+   - **Llama** — "run it yourself": what hardware to run a downloadable model at small scale.
+   (Figures for closed systems are labeled *estimated* per the sim-core honesty rule.)
+7. **Sandbox unlocks** — open playground becomes available.
 
-Modes: **Guided course mode** (this progression, blocks gating component unlocks) and **Open exploration / sandbox** (all components, free build), sharing the same grid + engine.
+Modes: **Guided course mode** (this progression, blocks gating component unlocks) and **Open exploration / sandbox** (all components, free build), sharing the same grid + engine. Difficulty ramps **simple → hard** across modules.
 
 ## 4. Playground
 

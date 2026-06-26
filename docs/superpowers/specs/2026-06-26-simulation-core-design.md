@@ -81,7 +81,7 @@ type Category =
 ```
 
 **Category-specific `specs` (illustrative):**
-- **accelerator:** `trainingTFLOPS`, `inferenceQPS`, `vramGB`.
+- **accelerator:** `trainingTFLOPS`, `inferenceQPS`, `vramGB`, plus **specialization** efficiency multipliers `trainEff` and `inferEff` (≈1.0 = great at it, <1.0 = wasteful). This models real chip sweet-spots *without hard rules* — e.g. AWS Trainium has high `trainEff`/low `inferEff`; AWS Inferentia the reverse; NVIDIA H100 and AMD MI300X ≈1.0 on both. Also `imageEff` for how well it handles image-generation workloads.
 - **cpu:** `cores`, `baseGHz`.
 - **server:** `acceleratorSlots`, `cpuSlots`, `ramGB`, `rackUnits`.
 - **rack:** `rackUnitCapacity`, `powerCapacityKW`, `weightCapacityKg`.
@@ -127,8 +127,9 @@ interface Metrics {
   };
   thermal: { heatKW: number; coolingKW: number; deficitKW: number };
   compute: {
-    trainingThroughput: number;        // effective, after networking penalty
-    inferenceThroughput: number;       // effective QPS
+    trainingThroughput: number;        // effective, after networking + trainEff penalties
+    inferenceThroughput: number;       // effective QPS, after inferEff (and imageEff if image)
+    modality: "text" | "image";        // which the current workload exercises
   };
   cost: {
     capex: number;
@@ -150,7 +151,10 @@ interface Metrics {
 
 interface Violation {
   code: "power-deficit" | "overheating" | "rack-overfull"
-      | "no-network" | "over-land" | "unpowered-component" | "weight-exceeded";
+      | "no-network" | "over-land" | "unpowered-component" | "weight-exceeded"
+      | "chip-mismatch";   // warning: a specialized chip used off its sweet spot
+                           // (e.g. Trainium serving inference). Never blocks — it
+                           // explains the inefficiency and suggests a better fit.
   severity: "error" | "warning";
   message: string;                     // human-readable, used as lesson feedback
   relatedInstanceIds: string[];
@@ -161,14 +165,19 @@ interface Violation {
 - **Power:** `drawKW = Σ powerDraw + cooling power`. `deficit = draw − supply`. Under-power → `power-deficit` violation.
 - **Thermal:** `heatKW = Σ heatOutput`. Cooling must satisfy `coolingKW ≥ heatKW`, else `overheating`.
 - **Training vs inference (the centerpiece):** inference throughput scales ~linearly with accelerator count (embarrassingly parallel). Training throughput scales with accelerator count *only while the cluster is sufficiently interconnected*; if `bisectionGbps` is below a per-accelerator threshold, training throughput is penalized (and `clusterConnected = false`). This makes networking matter for training but barely for inference — the intended lesson.
+- **Modality (image vs text):** an image-generation workload multiplies per-output compute cost by a large factor versus text, so the same hardware serves far fewer images/sec than tokens/sec. This is what makes "running Midjourney" visibly heavier than "running ChatGPT."
+- **Chip specialization (soft, not hard):** effective throughput = raw spec × the matching efficiency multiplier (`trainEff`, `inferEff`, `imageEff`). A chip off its sweet spot still works but yields less per dollar and raises a `chip-mismatch` *warning* (not an error) naming a better-fit part. This is the "free choice + discover the mistake + learn why" mechanic — never a hard block.
 - **Cost:** capex = Σ capex; opex = energy (`drawKW × 730 × pricePerKWh`) + fixed opex. Efficiency metrics enable "GPU A vs GPU B per dollar" comparisons.
 
 ### 3.5 Workload evaluation — `evaluateAgainstWorkload(build, workload): Result`
 
 ```ts
+type Modality = "text" | "image";   // image generation costs far more compute per output
+
 type Workload =
-  | { type: "training"; modelSizeB: number; gpuBudget?: number; targetThroughput?: number }
-  | { type: "inference"; model: string; qpsTarget: number; maxCostPerMillionTokens?: number };
+  | { type: "training"; modality: Modality; modelSizeB: number; gpuBudget?: number; targetThroughput?: number }
+  | { type: "inference"; modality: Modality; model: string; qpsTarget: number; maxCostPerUnit?: number };
+//      maxCostPerUnit is per-million-tokens for text, per-1k-images for image.
 
 interface Result {
   passed: boolean;
@@ -227,8 +236,8 @@ src/sim/__tests__/   // vitest unit tests
 ## 4. Success criteria for this subsystem
 
 1. `evaluateBuild` and `evaluateAgainstWorkload` are pure, deterministic, and exported from a single entry point.
-2. A seed catalog exists with at least: 2–3 accelerators spanning eras (e.g. an A100-class and an H100/H200-class part so historical and current training runs are both expressible), 1 CPU, 1 server, 1 rack, 2 power options, 2 cooling options, 1–2 switches, 1 space type — each with realistic-ballpark specs, vendor, and dated USD pricing + disclaimer.
+2. A seed catalog exists with a meaningful accelerator roster across vendors and specializations: **NVIDIA** (an A100-class and an H100/H200-class part — covers historical and current runs, ≈1.0 on both efficiencies), **AMD MI300X** (all-rounder, often cheaper), **AWS Trainium** (high `trainEff`, low `inferEff`), **AWS Inferentia** (high `inferEff`, low `trainEff`), and **Google TPU** (strong at scale) — plus 1 CPU, 1 server, 1 rack, 2 power options, 2 cooling options, 1–2 switches, 1 space type. Each carries realistic-ballpark specs, vendor, and dated USD pricing + disclaimer.
 3. All seven violation codes are detectable and unit-tested.
-4. The training-vs-inference divergence is demonstrably modeled and asserted by a test, and `costPerMillionTokens` is computed and asserted (so affordability scenarios like BharatGen are expressible).
+4. The training-vs-inference divergence is demonstrably modeled and asserted by a test; modality (image costs more per output than text) and chip specialization (off-sweet-spot chips lose efficiency and raise a `chip-mismatch` warning) are each asserted; and `costPerMillionTokens` is computed and asserted (so affordability scenarios are expressible).
 5. Test suite passes with meaningful coverage of the relationships in §3.4.
 6. No DOM, rendering, network, or persistence code is present in `src/sim`.

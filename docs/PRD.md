@@ -42,7 +42,7 @@ College students and early-career tech people. Implications:
 | 2 | **Playground UI** (Vite) — shelf, build list, scenario, live readout | ✅ Built | — |
 | 3 | **Curriculum (Modules 1–3)** — guided Learn mode | ✅ Built (16 tests) | `specs/2026-06-26-curriculum-and-sharing-design.md`, `plans/2026-06-26-curriculum-modules-1-3.md` |
 | 3a | **Component visuals** — inline SVG schematic icons | ✅ Built | (this PRD §7) |
-| 4 | **UI enhancements** — progress bar, nav, infra board, part details | 🔜 Spec'd, ready to build | `specs/2026-06-26-ui-enhancements-design.md` |
+| 4 | **UI enhancements** — progress bar, nav, infra board, part details | 🔨 Planned, building | `specs/2026-06-26-ui-enhancements-design.md`, `plans/2026-06-26-ui-enhancements.md` |
 | 5 | **Curriculum Modules 4–6** — chip choice, cost, real builds finale | 📋 Designed | curriculum spec |
 | 6 | **Isometric game canvas** — the "Minecraft feel" build surface | 📋 Planned | — |
 | 7 | **Accounts + save/share** — Supabase social sign-in, public link + fork | 📋 Designed | curriculum-and-sharing spec |

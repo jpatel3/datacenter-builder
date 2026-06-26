@@ -31,3 +31,22 @@ export function courseProgressPct(course: Course, progress: Progress): number {
   const done = blocks.filter((b) => progress.completedBlockIds.includes(b.id)).length;
   return Math.round((done / blocks.length) * 100);
 }
+
+export interface LessonPosition {
+  moduleTitle: string;
+  lessonTitle: string;
+  stepIndex: number; // 0-based index of the block within its lesson
+  stepCount: number; // total blocks in that lesson
+}
+
+export function locateBlock(course: Course, blockId: string): LessonPosition | null {
+  for (const m of course.modules) {
+    for (const l of m.lessons) {
+      const idx = l.blocks.findIndex((b) => b.id === blockId);
+      if (idx >= 0) {
+        return { moduleTitle: m.title, lessonTitle: l.title, stepIndex: idx, stepCount: l.blocks.length };
+      }
+    }
+  }
+  return null;
+}

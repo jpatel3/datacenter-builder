@@ -65,7 +65,38 @@
       .lesson button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
       .hint { margin-top: 10px; color: var(--warn); font-size: 13px; }
       .quiz button { display:block; width:100%; text-align:left; background: var(--panel); border:1px solid var(--line); color: var(--text); font-weight: 400; margin: 4px 0; }
-      .done { color: var(--ok); font-weight: 600; }
+      .done { color: var(--ok); font-weight: 600; margin-top: 8px; }
+      .coursebar { height: 6px; background: var(--panel2); border-radius: 4px; margin-top: 8px; max-width: 320px; overflow: hidden; }
+      .coursebar .fill { height: 100%; background: var(--ok); width: 0%; transition: width .2s; }
+      .crumb { font-size: 12px; color: var(--muted); }
+      .step { font-size: 12px; color: var(--accent); margin-top: 2px; }
+      .bar { height: 5px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; margin: 6px 0 10px; overflow: hidden; }
+      .bar .fill { height: 100%; background: var(--accent); }
+      .navfoot { display: flex; align-items: center; margin-top: 14px; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+      .navfoot button { background: var(--accent); border: none; color: #04121f; font-weight: 600; border-radius: 7px; padding: 8px 14px; cursor: pointer; }
+      .navfoot button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
+      .navfoot button:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+      .board-panel { margin: 0 24px 24px; }
+      #board { overflow-x: auto; }
+      .board-legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+      .board-legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; }
+      .legend-power::before { background: #f2c744; } .legend-net::before { background: #4ea1ff; } .legend-heat::before { background: #f85149; }
+      .shelf-row { display: flex; gap: 6px; align-items: stretch; }
+      .shelf-row .add { flex: 1; }
+      button.info { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 50%; width: 24px; height: 24px; flex: 0 0 auto; cursor: pointer; font-size: 12px; line-height: 1; padding: 0; align-self: center; }
+      button.info:hover { border-color: var(--accent); color: var(--accent); }
+      #detail-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; z-index: 10; }
+      #detail-backdrop.open { display: block; }
+      #detail-panel { position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 90vw; background: var(--panel); border-left: 1px solid var(--line); padding: 20px; overflow-y: auto; transform: translateX(100%); transition: transform .2s; z-index: 11; }
+      #detail-panel.open { transform: translateX(0); }
+      #detail-panel .big { width: 120px; height: 80px; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; padding: 8px; }
+      #detail-panel h3 { margin: 12px 0 2px; }
+      #detail-panel .vendor { color: var(--muted); font-size: 13px; }
+      #detail-panel table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+      #detail-panel td { border-bottom: 1px solid var(--line); padding: 5px 0; }
+      #detail-panel td:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+      #detail-panel a.learn { display: inline-block; margin-top: 14px; color: var(--accent); }
+      #detail-panel .close { float: right; background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -77,6 +108,7 @@
         <button id="mode-sandbox" class="mode">Sandbox</button>
         <span id="progress" class="sub" style="margin-left:10px"></span>
       </div>
+      <div class="coursebar"><div id="coursebar-fill" class="fill"></div></div>
     </header>
     <main>
       <section class="panel"><h2>Parts shelf</h2><div id="shelf"></div></section>
@@ -97,6 +129,12 @@
         <p id="disclaimer" class="sub" style="margin-top:14px"></p>
       </section>
     </main>
+    <section class="panel board-panel" id="board-panel">
+      <h2>Infrastructure</h2>
+      <div id="board"></div>
+    </section>
+    <div id="detail-backdrop"></div>
+    <aside id="detail-panel" aria-hidden="true"></aside>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

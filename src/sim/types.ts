@@ -28,6 +28,8 @@ export interface ComponentType {
   powerDraw: number; // watts
   heatOutput: number; // watts
   requires?: string[];
+  description?: string; // 1-2 plain-language sentences
+  learnMoreUrl?: string; // Wikipedia / neutral reference page
 }
 
 export interface PlacedComponent {

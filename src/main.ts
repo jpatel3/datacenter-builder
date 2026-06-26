@@ -3,16 +3,20 @@ import {
 } from "./sim";
 import type { Build, Category, Metrics, Modality, Workload } from "./sim";
 import {
-  course, checkSuccess, currentBlock, unlockedComponents, completeBlock, courseProgressPct,
+  course, checkSuccess, currentBlock, unlockedComponents, completeBlock, courseProgressPct, locateBlock, flattenBlocks,
 } from "./curriculum";
 import type { Block, Progress } from "./curriculum";
-import { iconFor } from "./ui/icons";
+import { iconFor, iconForCategory } from "./ui/icons";
+import { buildFlowModel } from "./ui/flow";
+import type { FlowModel, FlowNodeId } from "./ui/flow";
 
 // ---- state ----
 const build: Build = { components: [], connections: [] };
 let counter = 0;
 let mode: "learn" | "sandbox" = (localStorage.getItem("dcb-mode") as "learn" | "sandbox") || "learn";
 let progress: Progress = loadProgress();
+let viewIndex = 0;
+const answeredCorrect = new Set<string>();
 
 function loadProgress(): Progress {
   try {
@@ -52,6 +56,24 @@ const fmt = (n: number, d = 0) => (!Number.isFinite(n) ? "∞" : n.toLocaleStrin
 const money = (n: number) => (!Number.isFinite(n) ? "∞" : "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 }));
 const typeOf = (id: string) => catalog.find((c) => c.id === id);
 
+const allBlocks = () => flattenBlocks(course);
+function frontierIndex(): number {
+  const cur = currentBlock(course, progress);
+  const all = allBlocks();
+  return cur ? all.findIndex((b) => b.id === cur.id) : all.length;
+}
+function clampView() {
+  const f = frontierIndex();
+  if (viewIndex > f) viewIndex = f;
+  if (viewIndex < 0) viewIndex = 0;
+}
+function satisfied(block: Block): boolean {
+  if (block.type === "teach") return true;
+  if (block.type === "reflect") return answeredCorrect.has(block.id) || progress.completedBlockIds.includes(block.id);
+  if (block.successCheck) return checkSuccess(block.successCheck, build, block);
+  return true;
+}
+
 function rewirePower() {
   const firstPower = build.components.find((c) => typeOf(c.typeId)?.category === "power");
   build.connections = [];
@@ -82,11 +104,15 @@ function renderShelf() {
     const wrap = document.createElement("div"); wrap.className = "cat";
     wrap.innerHTML = `<h3>${CATEGORY_LABEL[cat]}</h3>`;
     for (const p of parts) {
+      const rowD = document.createElement("div"); rowD.className = "shelf-row";
       const b = document.createElement("button"); b.className = "add";
       const watt = p.powerDraw ? `${fmt(p.powerDraw)}W · ` : "";
       b.innerHTML = `<span class="ico">${iconFor(p)}</span><span class="nm">${p.name}</span><small>${watt}${money(p.capex)}</small>`;
       b.onclick = () => addComponent(p.id);
-      wrap.appendChild(b);
+      const info = document.createElement("button"); info.className = "info"; info.textContent = "ⓘ"; info.title = "Details";
+      info.onclick = () => openDetail(p.id);
+      rowD.appendChild(b); rowD.appendChild(info);
+      wrap.appendChild(rowD);
     }
     el.appendChild(wrap);
   }
@@ -133,15 +159,26 @@ function renderScenarioSelect() {
 
 function renderLesson() {
   const el = $("lesson");
-  const block = currentBlock(course, progress);
-  if (!block) {
+  const all = allBlocks();
+  const f = frontierIndex();
+  clampView();
+  if (f >= all.length) {
     el.innerHTML = `<div class="kind">Course complete</div><h3>🎉 You finished the foundations!</h3>
       <p class="sub">You've covered chips, power, cooling, and why training needs a network. Jump into Sandbox to build freely.</p>
-      <div class="actions"><button id="to-sandbox">Open Sandbox</button></div>`;
+      <div class="navfoot"><button id="to-sandbox">Open Sandbox</button></div>`;
     ($("to-sandbox") as HTMLButtonElement).onclick = () => setMode("sandbox");
     return;
   }
-  let html = `<div class="kind">${block.type}</div><h3>${block.title}</h3><p>${block.body}</p>`;
+  const block = all[viewIndex];
+  const pos = locateBlock(course, block.id)!;
+  const reviewing = viewIndex < f;
+  const fillPct = ((pos.stepIndex + 1) / pos.stepCount) * 100;
+
+  let html = `<div class="crumb">${pos.moduleTitle} › ${pos.lessonTitle}</div>`;
+  html += `<div class="step">Step ${pos.stepIndex + 1} of ${pos.stepCount}${reviewing ? " · review" : ""}</div>`;
+  html += `<div class="bar"><div class="fill" style="width:${fillPct}%"></div></div>`;
+  html += `<div class="kind">${block.type}</div><h3>${block.title}</h3><p>${block.body}</p>`;
+
   if (block.unlocks?.length) {
     const cards = block.unlocks
       .map((id) => typeOf(id))
@@ -150,33 +187,50 @@ function renderLesson() {
       .join("");
     if (cards) html += `<div class="unlocked-row">${cards}</div>`;
   }
+
   if (block.type === "reflect" && block.quiz) {
-    html += `<div class="quiz">` + block.quiz.options.map((o, i) => `<button data-i="${i}">${o}</button>`).join("") + `</div>`;
+    const answered = satisfied(block);
+    html += `<div class="quiz">` + block.quiz.options.map((o, i) => {
+      const correct = i === block.quiz!.answerIndex;
+      const mark = answered && correct ? " ✓" : "";
+      return `<button data-i="${i}"${answered ? " disabled" : ""}>${o}${mark}</button>`;
+    }).join("") + `</div>`;
   }
-  html += `<div class="actions"></div>`;
+
+  if ((block.type === "task" || block.type === "challenge") && !reviewing && satisfied(block)) {
+    html += `<div class="done">✓ requirement met</div>`;
+  }
   if (lastHint) html += `<div class="hint">💡 ${lastHint}</div>`;
+
+  const nextEnabled = reviewing || satisfied(block);
+  const showHint = (block.type === "task" || block.type === "challenge") && !reviewing;
+  html += `<div class="navfoot">
+    <button class="ghost" id="nav-prev"${viewIndex === 0 ? " disabled" : ""}>← Previous</button>
+    <span style="flex:1"></span>
+    ${showHint ? `<button class="ghost" id="nav-hint">Hint</button>` : ""}
+    <button id="nav-next"${nextEnabled ? "" : " disabled"}>Next →</button>
+  </div>`;
   el.innerHTML = html;
 
-  const actions = el.querySelector(".actions")!;
-  if (block.type === "teach") {
-    const b = document.createElement("button"); b.textContent = "Got it →";
-    b.onclick = () => advance(block); actions.appendChild(b);
-  } else if (block.type === "task" || block.type === "challenge") {
-    const satisfied = block.successCheck ? checkSuccess(block.successCheck, build, block) : false;
-    const cont = document.createElement("button"); cont.textContent = "Continue →";
-    cont.disabled = !satisfied; cont.onclick = () => advance(block); actions.appendChild(cont);
-    const hint = document.createElement("button"); hint.className = "ghost"; hint.textContent = "Hint";
-    hint.onclick = () => { lastHint = computeHint(block); render(); }; actions.appendChild(hint);
-    if (satisfied) actions.insertAdjacentHTML("beforeend", `<span class="done">✓ requirement met</span>`);
-  } else if (block.type === "reflect" && block.quiz) {
+  if (block.type === "reflect" && block.quiz) {
     el.querySelectorAll<HTMLButtonElement>(".quiz button").forEach((qb) => {
       qb.onclick = () => {
         const i = Number(qb.dataset.i);
-        if (i === block.quiz!.answerIndex) advance(block);
-        else { lastHint = "Not quite — try again."; render(); }
+        if (i === block.quiz!.answerIndex) { answeredCorrect.add(block.id); lastHint = ""; }
+        else lastHint = "Not quite — try again.";
+        render();
       };
     });
   }
+  const prev = document.getElementById("nav-prev");
+  if (prev) prev.onclick = () => { viewIndex = Math.max(0, viewIndex - 1); lastHint = ""; render(); };
+  const hintBtn = document.getElementById("nav-hint");
+  if (hintBtn) hintBtn.onclick = () => { lastHint = computeHint(block); render(); };
+  const next = document.getElementById("nav-next");
+  if (next) next.onclick = () => {
+    if (viewIndex < f) { viewIndex++; lastHint = ""; render(); }
+    else { progress = completeBlock(progress, block.id); saveProgress(); viewIndex = frontierIndex(); lastHint = ""; render(); }
+  };
 }
 
 function computeHint(block: Block): string {
@@ -199,10 +253,6 @@ function computeHint(block: Block): string {
   return block.hints[0].text;
 }
 
-function advance(block: Block) {
-  progress = completeBlock(progress, block.id); saveProgress(); lastHint = ""; render();
-}
-
 // ---- readout ----
 function activeWorkload(): { workload: Workload | null; modality: Modality } {
   if (mode === "sandbox") {
@@ -212,6 +262,11 @@ function activeWorkload(): { workload: Workload | null; modality: Modality } {
   const block = currentBlock(course, progress);
   if (block?.workload) return { workload: block.workload, modality: block.workload.modality };
   return { workload: null, modality: "text" };
+}
+
+function metricsForActive(): Metrics {
+  const { workload, modality } = activeWorkload();
+  return workload ? evaluateAgainstWorkload(build, workload).metrics : evaluateBuild(build, { modality });
 }
 
 function renderReadout() {
@@ -247,20 +302,89 @@ function renderReadout() {
     : metrics.violations.map((v) => `<div class="viol ${v.severity}">${v.severity === "error" ? "⛔" : "⚠️"} ${v.message}</div>`).join("");
 }
 
+// ---- infra board ----
+const NODE_POS: Record<FlowNodeId, { x: number; y: number }> = {
+  power: { x: 8, y: 85 }, compute: { x: 225, y: 85 }, network: { x: 442, y: 18 }, cooling: { x: 442, y: 152 },
+};
+const NW = 150, NH = 60;
+const NODE_CAT: Record<FlowNodeId, Category> = {
+  power: "power", compute: "accelerator", network: "network", cooling: "cooling",
+};
+const KIND_COLOR: Record<string, string> = { power: "#f2c744", network: "#4ea1ff", heat: "#f85149" };
+const center = (id: FlowNodeId) => ({ x: NODE_POS[id].x + NW / 2, y: NODE_POS[id].y + NH / 2 });
+
+function renderFlowSVG(model: FlowModel): string {
+  const edges = model.edges.map((e) => {
+    const a = center(e.from), b = center(e.to);
+    const color = e.status === "alert" ? "#f85149" : KIND_COLOR[e.kind];
+    const dash = e.status === "alert" ? ` stroke-dasharray="6 4"` : "";
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="3"${dash}/>`;
+  }).join("");
+  const nodes = model.nodes.map((n) => {
+    const p = NODE_POS[n.id];
+    const border = n.status === "alert" ? "#f85149" : "#2d3a48";
+    const alertText = n.alert ? `<text x="${p.x + 12}" y="${p.y + 52}" fill="#f85149" font-size="11">⚠ ${n.alert}</text>` : "";
+    return `
+      <rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="9" fill="#222c38" stroke="${border}" stroke-width="2"/>
+      <svg x="${p.x + 10}" y="${p.y + 9}" width="40" height="26" style="color:#c7d2de">${iconForCategory(NODE_CAT[n.id])}</svg>
+      <text x="${p.x + 58}" y="${p.y + 20}" fill="#e6edf3" font-size="14" font-weight="600">${n.label}</text>
+      <text x="${p.x + 58}" y="${p.y + 36}" fill="#8b98a8" font-size="11">${n.stat}</text>
+      ${alertText}`;
+  }).join("");
+  return `<svg viewBox="0 0 600 230" width="100%" style="min-width:560px">${edges}${nodes}</svg>`;
+}
+
+function renderBoard() {
+  const el = $("board");
+  const model = buildFlowModel(build, metricsForActive());
+  if (!model.nodes.length) { el.innerHTML = `<div class="empty">Add parts to see your data center take shape.</div>`; return; }
+  el.innerHTML = renderFlowSVG(model) +
+    `<div class="board-legend"><span class="legend-power">power</span><span class="legend-net">network</span><span class="legend-heat">heat</span><span style="color:#f85149">⚠ red = problem</span></div>`;
+}
+
+// ---- detail panel ----
+function openDetail(typeId: string) {
+  const t = typeOf(typeId); if (!t) return;
+  const specsRows = Object.entries(t.specs).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  const extra = `<tr><td>Power draw</td><td>${t.powerDraw} W</td></tr><tr><td>Heat output</td><td>${t.heatOutput} W</td></tr><tr><td>Cost</td><td>${money(t.capex)}</td></tr>`;
+  const link = t.learnMoreUrl ? `<a class="learn" href="${t.learnMoreUrl}" target="_blank" rel="noopener noreferrer">Learn more ↗</a>` : "";
+  $("detail-panel").innerHTML = `
+    <button class="close" id="detail-close" title="Close">✕</button>
+    <div class="big">${iconFor(t)}</div>
+    <h3>${t.name}</h3><div class="vendor">${t.vendor}</div>
+    <p>${t.description ?? ""}</p>
+    <table>${specsRows}${extra}</table>
+    ${link}`;
+  (document.getElementById("detail-close") as HTMLButtonElement).onclick = closeDetail;
+  $("detail-panel").classList.add("open");
+  $("detail-backdrop").classList.add("open");
+  $("detail-panel").setAttribute("aria-hidden", "false");
+}
+function closeDetail() {
+  $("detail-panel").classList.remove("open");
+  $("detail-backdrop").classList.remove("open");
+  $("detail-panel").setAttribute("aria-hidden", "true");
+}
+
 // ---- mode ----
-function setMode(m: "learn" | "sandbox") { mode = m; saveMode(); lastHint = ""; render(); }
+function setMode(m: "learn" | "sandbox") { mode = m; saveMode(); lastHint = ""; viewIndex = frontierIndex(); render(); }
 function renderModeButtons() {
   ($("mode-learn") as HTMLButtonElement).className = "mode" + (mode === "learn" ? " active" : "");
   ($("mode-sandbox") as HTMLButtonElement).className = "mode" + (mode === "sandbox" ? " active" : "");
+  const pct = mode === "learn" ? courseProgressPct(course, progress) : 0;
   $("progress").textContent = mode === "learn" ? `Progress: ${courseProgressPct(course, progress)}%` : "";
+  ($("coursebar-fill") as HTMLElement).style.width = `${pct}%`;
 }
 
 function render() {
-  renderModeButtons(); renderShelf(); renderBuild(); renderMiddle(); renderReadout();
+  renderModeButtons(); renderShelf(); renderBuild(); renderMiddle(); renderReadout(); renderBoard();
 }
 
 // ---- init ----
 ($("mode-learn") as HTMLButtonElement).onclick = () => setMode("learn");
 ($("mode-sandbox") as HTMLButtonElement).onclick = () => setMode("sandbox");
+$("detail-backdrop").onclick = closeDetail;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDetail(); });
 $("disclaimer").textContent = `${PRICING_DISCLAIMER} Catalog updated ${LAST_UPDATED}.`;
+viewIndex = frontierIndex();
 render();

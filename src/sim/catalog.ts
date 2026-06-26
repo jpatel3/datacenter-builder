@@ -16,6 +16,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 2 },
     powerDraw: 400,
     heatOutput: 400,
+    description: "The workhorse data-center GPU of the early LLM era. Still capable and a bit cheaper than the H100, but a generation behind on speed.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Ampere_(microarchitecture)",
   },
   {
     id: "gpu-nvidia-h100",
@@ -27,6 +29,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 3 },
     powerDraw: 700,
     heatOutput: 700,
+    description: "NVIDIA's flagship AI data-center GPU — very fast at both training and serving, but power-hungry (~700W) and expensive.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Hopper_(microarchitecture)",
   },
   {
     id: "gpu-amd-mi300x",
@@ -38,6 +42,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 3 },
     powerDraw: 750,
     heatOutput: 750,
+    description: "AMD's answer to the H100 — a strong all-rounder with a lot of memory (192GB), often at a lower price.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/AMD_Instinct",
   },
   {
     id: "acc-aws-trainium",
@@ -49,6 +55,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 2 },
     powerDraw: 500,
     heatOutput: 500,
+    description: "Amazon's custom chip built specifically for training models cheaply — great at training, weak and wasteful for serving.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/AI_accelerator",
   },
   {
     id: "acc-aws-inferentia",
@@ -60,6 +68,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 2 },
     powerDraw: 300,
     heatOutput: 300,
+    description: "Amazon's custom chip tuned for inference — cheap and efficient at serving requests, but poor for training.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/AI_accelerator",
   },
   {
     id: "acc-google-tpu",
@@ -71,6 +81,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 2 },
     powerDraw: 600,
     heatOutput: 600,
+    description: "Google's Tensor Processing Unit — a custom AI chip that shines in large interconnected clusters for both training and serving.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Tensor_Processing_Unit",
   },
   // ---- CPU ----
   {
@@ -83,6 +95,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 1 },
     powerDraw: 300,
     heatOutput: 300,
+    description: "A server CPU that runs the host system, feeds data to the accelerators, and handles everything that isn't raw AI math.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Epyc",
   },
   // ---- Server ----
   {
@@ -95,6 +109,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 8, weightKg: 50 },
     powerDraw: 200,
     heatOutput: 200,
+    description: "The chassis that holds up to 8 accelerators plus CPUs, memory, and fans. The box you actually slot chips into.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Server_(computing)",
   },
   // ---- Rack ----
   {
@@ -107,6 +123,8 @@ export const catalog: ComponentType[] = [
     footprint: { areaSqM: 1.5, weightKg: 150 },
     powerDraw: 0,
     heatOutput: 0,
+    description: "A standard cabinet that mounts servers and gear in stacked 'U' slots. Has limits on space, power, and weight.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/19-inch_rack",
   },
   // ---- Power ----
   {
@@ -119,6 +137,8 @@ export const catalog: ComponentType[] = [
     footprint: { areaSqM: 2 },
     powerDraw: 0,
     heatOutput: 0,
+    description: "The connection to the electrical grid that powers everything. Its capacity caps how much gear you can run, and electricity is the biggest monthly cost.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Electrical_grid",
   },
   {
     id: "power-ups",
@@ -130,6 +150,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 6, weightKg: 200 },
     powerDraw: 0,
     heatOutput: 0,
+    description: "An uninterruptible power supply — battery backup that keeps gear running through brief outages so nothing crashes.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Uninterruptible_power_supply",
   },
   // ---- Cooling ----
   {
@@ -142,6 +164,8 @@ export const catalog: ComponentType[] = [
     footprint: { areaSqM: 2, weightKg: 300 },
     powerDraw: 15000,
     heatOutput: 0,
+    description: "A Computer Room Air Conditioner — blows cold air to carry heat out of the room so the chips don't cook. Uses power itself.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Computer_room_air_conditioning",
   },
   {
     id: "cooling-liquid",
@@ -153,6 +177,8 @@ export const catalog: ComponentType[] = [
     footprint: { areaSqM: 2, weightKg: 250 },
     powerDraw: 20000,
     heatOutput: 0,
+    description: "Pumps liquid right past the chips to remove far more heat than air — essential for dense, high-power GPU clusters.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Computer_cooling",
   },
   // ---- Network ----
   {
@@ -165,6 +191,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 1, weightKg: 10 },
     powerDraw: 500,
     heatOutput: 500,
+    description: "Connects the servers within a rack so they can talk to each other and the rest of the data center.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Network_switch",
   },
   {
     id: "net-spine-switch",
@@ -176,6 +204,8 @@ export const catalog: ComponentType[] = [
     footprint: { rackUnits: 2, weightKg: 15 },
     powerDraw: 1200,
     heatOutput: 1200,
+    description: "A high-bandwidth backbone switch that ties many racks together — what lets thousands of chips train as one cluster.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Network_switch",
   },
   // ---- Space ----
   {
@@ -188,5 +218,7 @@ export const catalog: ComponentType[] = [
     footprint: { areaSqM: 10 },
     powerDraw: 0,
     heatOutput: 0,
+    description: "Physical floor space in the building. Land and floor area cap how much you can fit, and there's a limit to how much power each square meter can handle.",
+    learnMoreUrl: "https://en.wikipedia.org/wiki/Data_center",
   },
 ];

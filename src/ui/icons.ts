@@ -68,8 +68,17 @@ const SHAPES: Record<Category, (a: string) => string> = {
     <circle cx="12.5" cy="10" r="0.8" fill="${a}" stroke="none"/>`,
 };
 
+function wrap(inner: string, label?: string): string {
+  const aria = label ? ` aria-label="${label}"` : "";
+  return `<svg viewBox="0 0 48 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" role="img"${aria}>${inner}</svg>`;
+}
+
 /** Returns an inline SVG string (48x32 viewBox) representing the component. */
 export function iconFor(t: ComponentType): string {
-  const inner = SHAPES[t.category](accentFor(t));
-  return `<svg viewBox="0 0 48 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" role="img" aria-label="${t.name}">${inner}</svg>`;
+  return wrap(SHAPES[t.category](accentFor(t)), t.name);
+}
+
+/** Returns an inline SVG for a bare category (used by the infra board). */
+export function iconForCategory(cat: Category, accent = "#7aa2c2"): string {
+  return wrap(SHAPES[cat](accent));
 }

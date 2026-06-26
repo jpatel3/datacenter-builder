@@ -5,6 +5,7 @@ import {
   unlockedComponents,
   completeBlock,
   courseProgressPct,
+  locateBlock,
 } from "../progress";
 import type { Course, Progress } from "../types";
 
@@ -64,5 +65,17 @@ describe("progress", () => {
   it("progress percent reflects completed fraction", () => {
     expect(courseProgressPct(course, { completedBlockIds: [] })).toBe(0);
     expect(courseProgressPct(course, { completedBlockIds: ["b1", "b2", "b3"] })).toBe(100);
+  });
+
+  it("locateBlock returns module/lesson titles, step index, and count", () => {
+    const pos = locateBlock(course, "b2")!;
+    expect(pos.moduleTitle).toBe("M1");
+    expect(pos.lessonTitle).toBe("L1");
+    expect(pos.stepIndex).toBe(1);
+    expect(pos.stepCount).toBe(3);
+  });
+
+  it("locateBlock returns null for an unknown id", () => {
+    expect(locateBlock(course, "nope")).toBeNull();
   });
 });

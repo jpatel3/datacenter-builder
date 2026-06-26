@@ -7,4 +7,6 @@ export {
   unlockedComponents,
   completeBlock,
   courseProgressPct,
+  locateBlock,
 } from "./progress";
+export type { LessonPosition } from "./progress";

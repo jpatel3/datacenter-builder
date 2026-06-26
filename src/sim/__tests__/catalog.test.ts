@@ -33,6 +33,13 @@ describe("catalog", () => {
     }
   });
 
+  it("every component has a description and an https learn-more link", () => {
+    for (const c of catalog) {
+      expect(c.description, c.id).toBeTruthy();
+      expect(c.learnMoreUrl ?? "", c.id).toMatch(/^https:\/\//);
+    }
+  });
+
   it("models chip specialization sweet spots", () => {
     const trainium = catalog.find((c) => c.id === "acc-aws-trainium")!;
     const inferentia = catalog.find((c) => c.id === "acc-aws-inferentia")!;

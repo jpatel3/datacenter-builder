@@ -6,6 +6,7 @@ import {
   course, checkSuccess, currentBlock, unlockedComponents, completeBlock, courseProgressPct,
 } from "./curriculum";
 import type { Block, Progress } from "./curriculum";
+import { iconFor } from "./ui/icons";
 
 // ---- state ----
 const build: Build = { components: [], connections: [] };
@@ -83,7 +84,7 @@ function renderShelf() {
     for (const p of parts) {
       const b = document.createElement("button"); b.className = "add";
       const watt = p.powerDraw ? `${fmt(p.powerDraw)}W · ` : "";
-      b.innerHTML = `+ ${p.name} <small>${watt}${money(p.capex)}</small>`;
+      b.innerHTML = `<span class="ico">${iconFor(p)}</span><span class="nm">${p.name}</span><small>${watt}${money(p.capex)}</small>`;
       b.onclick = () => addComponent(p.id);
       wrap.appendChild(b);
     }
@@ -98,8 +99,10 @@ function renderBuild() {
   if (!build.components.length) { el.innerHTML = `<div class="empty">Empty — add some parts.</div>`; return; }
   el.innerHTML = "";
   for (const c of build.components) {
+    const t = typeOf(c.typeId);
     const row = document.createElement("div"); row.className = "row";
-    row.innerHTML = `<span>${typeOf(c.typeId)?.name ?? c.typeId}</span>`;
+    const ico = t ? `<span class="ico">${iconFor(t)}</span>` : "";
+    row.innerHTML = `<span class="label">${ico}${t?.name ?? c.typeId}</span>`;
     const btn = document.createElement("button"); btn.textContent = "✕"; btn.title = "Remove";
     btn.onclick = () => removeComponent(c.instanceId);
     row.appendChild(btn); el.appendChild(row);
@@ -139,6 +142,14 @@ function renderLesson() {
     return;
   }
   let html = `<div class="kind">${block.type}</div><h3>${block.title}</h3><p>${block.body}</p>`;
+  if (block.unlocks?.length) {
+    const cards = block.unlocks
+      .map((id) => typeOf(id))
+      .filter((t): t is NonNullable<typeof t> => !!t)
+      .map((t) => `<div class="u"><span class="ico">${iconFor(t)}</span>${t.name}</div>`)
+      .join("");
+    if (cards) html += `<div class="unlocked-row">${cards}</div>`;
+  }
   if (block.type === "reflect" && block.quiz) {
     html += `<div class="quiz">` + block.quiz.options.map((o, i) => `<button data-i="${i}">${o}</button>`).join("") + `</div>`;
   }

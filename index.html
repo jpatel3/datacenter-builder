@@ -25,12 +25,19 @@
       .cat { margin-bottom: 12px; }
       .cat h3 { margin: 0 0 6px; font-size: 12px; color: var(--accent); }
       button.add {
-        display: block; width: 100%; text-align: left; cursor: pointer; margin: 4px 0;
+        display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; cursor: pointer; margin: 4px 0;
         background: var(--panel2); border: 1px solid var(--line); color: var(--text);
         border-radius: 7px; padding: 7px 10px;
       }
       button.add:hover { border-color: var(--accent); }
-      button.add small { color: var(--muted); float: right; font-variant-numeric: tabular-nums; }
+      button.add .ico { width: 36px; height: 24px; flex: 0 0 auto; color: #c7d2de; }
+      button.add .nm { flex: 1; }
+      button.add small { color: var(--muted); font-variant-numeric: tabular-nums; }
+      .row .ico { width: 30px; height: 20px; flex: 0 0 auto; color: #c7d2de; margin-right: 8px; }
+      .row .label { display: flex; align-items: center; }
+      .unlocked-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+      .unlocked-row .u { display: flex; flex-direction: column; align-items: center; width: 70px; text-align: center; font-size: 11px; color: var(--muted); gap: 4px; }
+      .unlocked-row .u .ico { width: 58px; height: 38px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 4px; }
       .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 6px; }
       .row:nth-child(odd) { background: var(--panel2); }
       .row button { background: none; border: none; color: var(--err); cursor: pointer; font-size: 15px; }

@@ -4,19 +4,36 @@ A standalone, browser-based educational game where you build AI data centers and
 
 Aimed at college / early-career tech learners. Numbers and vendor names are realistic-ish (NVIDIA, AMD, AWS Trainium/Inferentia, Google TPU) but simplified for intuition, not engineering-grade accuracy.
 
-## Status
+## Screenshots
 
-Early development. Building in subsystems:
+**Guided "Learn" mode** — block-by-block lessons; parts unlock as you progress:
 
-1. **Simulation core** — ✅ implemented. Headless, deterministic engine + component/pricing catalog.
-2. **Playground UI (Vite)** — ✅ implemented. Add parts, pick a scenario, watch live metrics. `npm run dev`.
-3. **Curriculum (Modules 1–3)** — ✅ implemented. Guided "Learn" mode (Teach/Task/Challenge/Reflect), component unlocks, bottleneck-keyed hints, localStorage progress; plus free "Sandbox" mode.
-4. Isometric game canvas (the "Minecraft feel") — planned.
-5. Accounts + persistence + sharing (Supabase) — designed.
+![Learn mode](docs/screenshots/learn-mode.png)
 
-Run `npm run dev` and open the local URL. **Learn** mode walks you from "your first chip" through power/cooling to "why training needs a network." **Sandbox** unlocks every part for free building (Serve ChatGPT, Serve Midjourney, Train a model).
+**The infra board** — a live, color-coded schematic of your build (⚡ power · network · heat) that turns red when something's wrong; drag the nodes to rearrange. The lesson panel (right) keeps Previous/Next pinned and the course bar in its header:
 
-See `docs/superpowers/specs/` for designs and `docs/superpowers/plans/` for implementation plans.
+![Infrastructure board](docs/screenshots/board.png)
+
+**Part details** — click ⓘ on any part for a plain-language description, specs, cost, and a learn-more link:
+
+![Part details](docs/screenshots/part-details.png)
+
+## Roadmap
+
+| # | Subsystem | Status |
+|---|-----------|--------|
+| 1 | Simulation core (headless engine + component/pricing catalog) | ✅ Built |
+| 2 | Playground UI (Vite) | ✅ Built |
+| 3 | Curriculum Modules 1–3 (guided Learn mode) | ✅ Built |
+| 4 | UI: lesson progress, navigation, infra board, part details | ✅ Built |
+| 5 | Curriculum Modules 4–6 (chip choice → cost → ChatGPT/Midjourney/DeepSeek/Llama) | ✅ Built |
+| 6 | Movable infra board nodes | ✅ Built |
+| 7 | Accounts + save/share (GitHub sign-in, public link + fork, progress sync) | 🔨 Spec'd — awaiting Supabase keys |
+| 8 | Isometric "Minecraft" build canvas | 📋 Planned |
+
+**Full product spec, decision log, and roadmap → [docs/PRD.md](docs/PRD.md).** Per-subsystem designs live in `docs/superpowers/specs/`; implementation plans in `docs/superpowers/plans/`.
+
+Run `npm run dev` and open the local URL. **Learn** mode walks you from "your first chip" through power, cooling, and networking to building the infrastructure behind ChatGPT, Midjourney, DeepSeek, and Llama. **Sandbox** unlocks every part for free building.
 
 ## Simulation core
 

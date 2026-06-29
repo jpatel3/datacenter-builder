@@ -87,6 +87,7 @@ Full design: `specs/2026-06-26-ui-enhancements-design.md`. No open product quest
 
 ## 9. Repo & docs
 
-- Repo: `jpatel3/datacenter-builder` (private GitHub).
+- Repo: `jpatel3/datacenter-builder` (public GitHub).
+- **Live demo: https://jpatel3.github.io/datacenter-builder/** — auto-deploys from `main` via GitHub Actions (`.github/workflows/deploy.yml`).
 - Run: `npm install && npm run dev` (local playground), `npm test`, `npm run typecheck`.
 - Doc layers: **this PRD** (product source of truth) → **specs** (per-subsystem design) → **plans** (bite-sized implementation steps).

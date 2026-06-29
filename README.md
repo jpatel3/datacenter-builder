@@ -1,5 +1,7 @@
 # Data Center Builder
 
+**▶ Live demo: https://jpatel3.github.io/datacenter-builder/** (auto-deploys from `main` via GitHub Actions)
+
 A standalone, browser-based educational game where you build AI data centers and learn what actually goes into one — chips, racks, power, cooling, networking, land — and how those choices trade off on **cost, capacity, and the difference between training and inference** (and text vs. image workloads).
 
 Aimed at college / early-career tech learners. Numbers and vendor names are realistic-ish (NVIDIA, AMD, AWS Trainium/Inferentia, Google TPU) but simplified for intuition, not engineering-grade accuracy.

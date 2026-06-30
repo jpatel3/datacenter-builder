@@ -143,7 +143,7 @@ function renderBuild() {
     const t = typeOf(c.typeId);
     const row = document.createElement("div"); row.className = "row";
     const ico = t ? `<span class="ico">${iconFor(t)}</span>` : "";
-    row.innerHTML = `<span class="label">${ico}${t?.name ?? c.typeId}</span>`;
+    row.innerHTML = `<span class="label">${ico}${t ? esc(t.name) : esc(c.typeId)}</span>`;
     const btn = document.createElement("button"); btn.textContent = "✕"; btn.title = "Remove";
     btn.onclick = () => removeComponent(c.instanceId);
     row.appendChild(btn); el.appendChild(row);

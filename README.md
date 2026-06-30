@@ -75,6 +75,17 @@ What it models (credible but simplified, steady-state):
 
 ```bash
 npm install
-npm test         # vitest
+npm run dev        # local app at http://localhost:5174/
+npm test           # vitest
 npm run typecheck
 ```
+
+Architecture: a headless, fully-tested **simulation core** (`src/sim/`) computes the truth; a declarative **curriculum** (`src/curriculum/`) layers lessons on top reusing that engine; a thin **backend** (`src/backend/`, Supabase) adds accounts/save/share; and **`src/main.ts`** is the only file that touches the DOM. Design docs live in `docs/` (start with [`docs/PRD.md`](docs/PRD.md)).
+
+## Contributing
+
+Contributions are welcome — this is a learning project meant to stay approachable.
+
+- **Found a bug or have an idea?** Open an [issue](https://github.com/jpatel3/datacenter-builder/issues).
+- **Want to add a part, lesson, or scenario?** The component catalog (`src/sim/catalog.ts`) and curriculum (`src/curriculum/content.ts`) are plain data — easy first contributions. Keep numbers realistic-ish but simple; flag estimates honestly.
+- **Code changes:** keep `npm test` and `npm run typecheck` green, and keep the simulation core DOM-free. Open a PR describing the change.

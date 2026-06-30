@@ -30,7 +30,7 @@ Aimed at college / early-career tech learners. Numbers and vendor names are real
 | 4 | UI: lesson progress, navigation, infra board, part details | ✅ Built |
 | 5 | Curriculum Modules 4–6 (chip choice → cost → ChatGPT/Midjourney/DeepSeek/Llama) | ✅ Built |
 | 6 | Movable infra board nodes | ✅ Built |
-| 7 | Accounts + save/share (GitHub sign-in, public link + fork, progress sync) | 🔨 Spec'd — awaiting Supabase keys |
+| 7 | Accounts + save/share (GitHub sign-in, public link + fork, progress sync) | ✅ Built (Supabase) |
 | 8 | Isometric "Minecraft" build canvas | 📋 Planned |
 
 **Full product spec, decision log, and roadmap → [docs/PRD.md](docs/PRD.md).** Per-subsystem designs live in `docs/superpowers/specs/`; implementation plans in `docs/superpowers/plans/`.

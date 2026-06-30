@@ -108,10 +108,24 @@
       #detail-panel td:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
       #detail-panel a.learn { display: inline-block; margin-top: 14px; color: var(--accent); }
       #detail-panel .close { float: right; background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+      .auth { float: right; display: flex; gap: 8px; align-items: center; }
+      .auth .who { color: var(--muted); font-size: 13px; }
+      #account { margin-top: 4px; }
+      #save-build { color: #04121f; background: var(--accent); border: none; font-weight: 600; margin: 8px 0; justify-content: center; }
+      .mybuild { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 6px; gap: 6px; }
+      .mybuild:nth-child(even) { background: var(--panel2); }
+      .mybuild .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mybuild .acts { flex: 0 0 auto; }
+      .mybuild .acts button { background: none; border: 1px solid var(--line); color: var(--text); border-radius: 6px; padding: 3px 7px; margin-left: 4px; cursor: pointer; font-size: 12px; }
+      .mybuild .acts button:hover { border-color: var(--accent); }
+      .share-banner { background: rgba(78,161,255,.12); border: 1px solid var(--accent); border-radius: 9px; padding: 10px 14px; margin: 0 24px 12px; }
+      .share-banner button { background: var(--accent); border: none; color: #04121f; font-weight: 600; border-radius: 7px; padding: 6px 12px; cursor: pointer; margin-left: 8px; }
+      .share-banner button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
     </style>
   </head>
   <body>
     <header>
+      <div id="auth" class="auth"></div>
       <h1>Data Center Builder — Playground</h1>
       <p>Add parts on the left, pick a goal in the middle, and watch what your data center can actually do. Power is auto-wired for you in this early demo.</p>
       <div style="margin-top:10px">
@@ -119,12 +133,14 @@
         <button id="mode-sandbox" class="mode">Sandbox</button>
       </div>
     </header>
+    <div id="share-banner" class="share-banner" style="display:none"></div>
     <main>
       <section class="panel">
         <h2>Parts shelf</h2>
         <div id="shelf"></div>
         <h2 style="margin-top:16px">Your build</h2>
         <div id="build"></div>
+        <div id="account"></div>
       </section>
       <section class="panel">
         <h2>Infrastructure</h2>

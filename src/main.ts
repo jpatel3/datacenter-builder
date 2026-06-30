@@ -9,6 +9,13 @@ import type { Block, Progress } from "./curriculum";
 import { iconFor, iconForCategory } from "./ui/icons";
 import { buildFlowModel } from "./ui/flow";
 import type { FlowModel, FlowNodeId } from "./ui/flow";
+import { isConfigured } from "./backend/supabase";
+import { signInWithGitHub, signOut, getUser, onAuthChange } from "./backend/auth";
+import { saveBuild, listMyBuilds, deleteBuild, setPublic, getPublicBuild } from "./backend/builds";
+import type { BuildRow } from "./backend/builds";
+import { loadCloudProgress, saveCloudProgress } from "./backend/progress";
+import { parseShareParam, buildShareUrl } from "./backend/share";
+import type { User } from "@supabase/supabase-js";
 
 // ---- state ----
 const build: Build = { components: [], connections: [] };
@@ -17,6 +24,8 @@ let mode: "learn" | "sandbox" = (localStorage.getItem("dcb-mode") as "learn" | "
 let progress: Progress = loadProgress();
 let viewIndex = 0;
 const answeredCorrect = new Set<string>();
+let user: User | null = null;
+let myBuilds: BuildRow[] = [];
 
 function loadProgress(): Progress {
   try {
@@ -27,7 +36,10 @@ function loadProgress(): Progress {
   }
   return { completedBlockIds: [] };
 }
-function saveProgress() { localStorage.setItem("dcb-progress", JSON.stringify(progress)); }
+function saveProgress() {
+  localStorage.setItem("dcb-progress", JSON.stringify(progress));
+  if (user) void saveCloudProgress(user.id, progress.completedBlockIds);
+}
 function saveMode() { localStorage.setItem("dcb-mode", mode); }
 
 // ---- sandbox scenarios ----
@@ -442,6 +454,127 @@ function closeDetail() {
   $("detail-panel").setAttribute("aria-hidden", "true");
 }
 
+// ---- accounts / save / share ----
+function renderAuth() {
+  const el = document.getElementById("auth");
+  if (!el) return;
+  if (!isConfigured()) { el.innerHTML = ""; return; }
+  if (user) {
+    const meta = user.user_metadata as Record<string, unknown> | undefined;
+    const name = (meta?.user_name as string) || (meta?.name as string) || user.email || "you";
+    el.innerHTML = `<span class="who">@${name}</span><button class="mode" id="signout">Sign out</button>`;
+    (document.getElementById("signout") as HTMLButtonElement).onclick = () => void signOut();
+  } else {
+    el.innerHTML = `<button class="mode" id="signin">Sign in with GitHub</button>`;
+    (document.getElementById("signin") as HTMLButtonElement).onclick = () => void signInWithGitHub();
+  }
+}
+
+function renderAccount() {
+  const el = document.getElementById("account");
+  if (!el) return;
+  if (!isConfigured()) { el.innerHTML = ""; return; }
+  if (!user) { el.innerHTML = `<p class="sub" style="margin-top:14px">Sign in to save &amp; share your builds.</p>`; return; }
+  let html = `<h2 style="margin-top:16px">My builds</h2>`;
+  html += `<button class="add" id="save-build">＋ Save current build</button>`;
+  html += myBuilds.length
+    ? myBuilds.map((r) => `<div class="mybuild" data-id="${r.id}"><span class="nm">${r.name}${r.is_public ? " 🌐" : ""}</span><span class="acts"><button data-act="load">Load</button><button data-act="share">Share</button><button data-act="del">✕</button></span></div>`).join("")
+    : `<div class="empty">No saved builds yet.</div>`;
+  el.innerHTML = html;
+
+  (document.getElementById("save-build") as HTMLButtonElement).onclick = () => void doSave();
+  el.querySelectorAll<HTMLElement>(".mybuild").forEach((rowEl) => {
+    const row = myBuilds.find((b) => b.id === rowEl.dataset.id);
+    if (!row) return;
+    rowEl.querySelectorAll<HTMLButtonElement>("button[data-act]").forEach((btn) => {
+      btn.onclick = () => {
+        if (btn.dataset.act === "load") loadRow(row);
+        else if (btn.dataset.act === "share") void shareRow(row);
+        else if (btn.dataset.act === "del") void delRow(row);
+      };
+    });
+  });
+}
+
+async function refreshBuilds() {
+  if (!user) { myBuilds = []; return; }
+  try { myBuilds = await listMyBuilds(); } catch { myBuilds = []; }
+  renderAccount();
+}
+
+function snapshot() {
+  const m = evaluateBuild(build);
+  return { capex: m.cost.capex, costPerMillionTokens: m.cost.costPerMillionTokens, parts: build.components.length };
+}
+
+async function doSave() {
+  if (!user) return;
+  const name = prompt("Name this build:", "My data center");
+  if (!name) return;
+  try { await saveBuild(name, build, snapshot(), user.id); await refreshBuilds(); }
+  catch (e) { alert("Couldn't save: " + (e as Error).message); }
+}
+
+function loadRow(row: BuildRow) {
+  const idMap = new Map<string, string>();
+  build.components = row.build_json.components.map((c) => {
+    const nid = `i${counter++}`; idMap.set(c.instanceId, nid); return { ...c, instanceId: nid };
+  });
+  build.connections = row.build_json.connections.map((c) => ({ ...c, from: idMap.get(c.from) ?? c.from, to: idMap.get(c.to) ?? c.to }));
+  if (mode === "learn") setMode("sandbox");
+  lastHint = ""; render();
+}
+
+async function shareRow(row: BuildRow) {
+  try {
+    if (!row.is_public) await setPublic(row.id, true);
+    const url = buildShareUrl(window.location.origin, import.meta.env.BASE_URL, row.id);
+    try { await navigator.clipboard.writeText(url); } catch { /* clipboard may be blocked */ }
+    await refreshBuilds();
+    alert("Public link copied:\n" + url);
+  } catch (e) { alert("Couldn't share: " + (e as Error).message); }
+}
+
+async function delRow(row: BuildRow) {
+  if (!confirm(`Delete "${row.name}"?`)) return;
+  try { await deleteBuild(row.id); await refreshBuilds(); }
+  catch (e) { alert("Couldn't delete: " + (e as Error).message); }
+}
+
+async function onSignedIn() {
+  if (!user) return;
+  try {
+    const cloud = await loadCloudProgress(user.id);
+    const union = Array.from(new Set([...progress.completedBlockIds, ...cloud]));
+    progress = { completedBlockIds: union };
+    saveProgress();
+  } catch { /* keep local progress */ }
+}
+
+function showShareBanner(name: string) {
+  const el = document.getElementById("share-banner");
+  if (!el) return;
+  el.style.display = "";
+  el.innerHTML = `Viewing shared build <strong>${name}</strong>. <button id="savecopy">Save a copy</button><button class="ghost" id="dismiss">Dismiss</button>`;
+  (document.getElementById("savecopy") as HTMLButtonElement).onclick = async () => {
+    if (!user) { await signInWithGitHub(); return; }
+    try { await saveBuild(name + " (copy)", build, snapshot(), user.id); await refreshBuilds(); el.style.display = "none"; alert("Saved a copy to your builds."); }
+    catch (e) { alert("Couldn't save: " + (e as Error).message); }
+  };
+  (document.getElementById("dismiss") as HTMLButtonElement).onclick = () => { el.style.display = "none"; };
+}
+
+async function maybeShareView() {
+  const sid = parseShareParam(window.location.search);
+  if (!sid || !isConfigured()) return;
+  let row: BuildRow | null = null;
+  try { row = await getPublicBuild(sid); } catch { /* not found / not public */ }
+  history.replaceState({}, "", import.meta.env.BASE_URL);
+  if (!row) return;
+  loadRow(row);
+  showShareBanner(row.name);
+}
+
 // ---- mode ----
 function setMode(m: "learn" | "sandbox") { mode = m; saveMode(); lastHint = ""; viewIndex = frontierIndex(); render(); }
 function renderModeButtons() {
@@ -451,6 +584,7 @@ function renderModeButtons() {
 
 function render() {
   renderModeButtons(); renderShelf(); renderBuild(); renderMiddle(); renderReadout(); renderBoard();
+  renderAuth(); renderAccount();
 }
 
 // ---- init ----
@@ -472,3 +606,21 @@ document.addEventListener("pointerup", () => { if (dragging) { saveBoardPos(); d
 $("disclaimer").textContent = `${PRICING_DISCLAIMER} Catalog updated ${LAST_UPDATED}.`;
 viewIndex = frontierIndex();
 render();
+
+// ---- auth bootstrap (no-op when Supabase isn't configured) ----
+if (isConfigured()) {
+  onAuthChange(async (u) => {
+    const wasSignedOut = !user;
+    user = u;
+    if (u && wasSignedOut) await onSignedIn();
+    await refreshBuilds();
+    render();
+  });
+  void (async () => {
+    user = await getUser();
+    if (user) await onSignedIn();
+    await refreshBuilds();
+    await maybeShareView();
+    render();
+  })();
+}

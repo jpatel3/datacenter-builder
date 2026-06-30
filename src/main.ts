@@ -67,6 +67,9 @@ const $ = (id: string) => document.getElementById(id)!;
 const fmt = (n: number, d = 0) => (!Number.isFinite(n) ? "∞" : n.toLocaleString("en-US", { maximumFractionDigits: d }));
 const money = (n: number) => (!Number.isFinite(n) ? "∞" : "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 }));
 const typeOf = (id: string) => catalog.find((c) => c.id === id);
+/** Escape user-controlled strings before interpolating into innerHTML (build names, OAuth metadata). */
+const esc = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 const allBlocks = () => flattenBlocks(course);
 function frontierIndex(): number {
@@ -462,7 +465,7 @@ function renderAuth() {
   if (user) {
     const meta = user.user_metadata as Record<string, unknown> | undefined;
     const name = (meta?.user_name as string) || (meta?.name as string) || user.email || "you";
-    el.innerHTML = `<span class="who">@${name}</span><button class="mode" id="signout">Sign out</button>`;
+    el.innerHTML = `<span class="who">@${esc(name)}</span><button class="mode" id="signout">Sign out</button>`;
     (document.getElementById("signout") as HTMLButtonElement).onclick = () => void signOut();
   } else {
     el.innerHTML = `<button class="mode" id="signin">Sign in with GitHub</button>`;
@@ -478,7 +481,7 @@ function renderAccount() {
   let html = `<h2 style="margin-top:16px">My builds</h2>`;
   html += `<button class="add" id="save-build">＋ Save current build</button>`;
   html += myBuilds.length
-    ? myBuilds.map((r) => `<div class="mybuild" data-id="${r.id}"><span class="nm">${r.name}${r.is_public ? " 🌐" : ""}</span><span class="acts"><button data-act="load">Load</button><button data-act="share">Share</button><button data-act="del">✕</button></span></div>`).join("")
+    ? myBuilds.map((r) => `<div class="mybuild" data-id="${r.id}"><span class="nm">${esc(r.name)}${r.is_public ? " 🌐" : ""}</span><span class="acts"><button data-act="load">Load</button><button data-act="share">Share</button><button data-act="del">✕</button></span></div>`).join("")
     : `<div class="empty">No saved builds yet.</div>`;
   el.innerHTML = html;
 
@@ -555,7 +558,7 @@ function showShareBanner(name: string) {
   const el = document.getElementById("share-banner");
   if (!el) return;
   el.style.display = "";
-  el.innerHTML = `Viewing shared build <strong>${name}</strong>. <button id="savecopy">Save a copy</button><button class="ghost" id="dismiss">Dismiss</button>`;
+  el.innerHTML = `Viewing shared build <strong>${esc(name)}</strong>. <button id="savecopy">Save a copy</button><button class="ghost" id="dismiss">Dismiss</button>`;
   (document.getElementById("savecopy") as HTMLButtonElement).onclick = async () => {
     if (!user) { await signInWithGitHub(); return; }
     try { await saveBuild(name + " (copy)", build, snapshot(), user.id); await refreshBuilds(); el.style.display = "none"; alert("Saved a copy to your builds."); }

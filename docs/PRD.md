@@ -47,7 +47,8 @@ College students and early-career tech people. Implications:
 | 5a | **Lesson UI polish** — full-height lesson panel, pinned footer nav, in-panel course bar, lesson-jump menu | ✅ Built | ui-enhancements spec |
 | 6 | **Movable infra nodes** — drag the 4 grouped board nodes to rearrange; positions persist (localStorage) | ✅ Built | — |
 | 7 | **Isometric game canvas** — the "Minecraft feel" build surface | 📋 Planned | — |
-| 8 | **Accounts + save/share** — GitHub sign-in, save/load builds, public link + fork, progress sync | ✅ Built (Supabase wired; live GitHub login verify pending) | `specs/2026-06-26-accounts-and-sharing-design.md`, `plans/2026-06-30-accounts-and-sharing.md` |
+| 8 | **Accounts + save/share** — GitHub sign-in, save/load builds, public link + fork, progress sync | ✅ Built & live (GitHub login verified) | `specs/2026-06-26-accounts-and-sharing-design.md`, `plans/2026-06-30-accounts-and-sharing.md` |
+| 9 | **Landing page + social preview** — hero/pitch/CTA before the builder; OG tags + favicon | ✅ Built | (this PRD) |
 
 ## 6. Decision log (product-level)
 

@@ -610,6 +610,19 @@ $("disclaimer").textContent = `${PRICING_DISCLAIMER} Catalog updated ${LAST_UPDA
 viewIndex = frontierIndex();
 render();
 
+// ---- landing page → builder ----
+function enterApp() {
+  const landing = document.getElementById("landing");
+  const app = document.getElementById("app");
+  if (landing) landing.style.display = "none";
+  if (app) app.style.display = "";
+  window.scrollTo(0, 0);
+}
+document.getElementById("enter")?.addEventListener("click", () => { setMode("learn"); enterApp(); });
+document.getElementById("enter-sandbox")?.addEventListener("click", () => { setMode("sandbox"); enterApp(); });
+// Share links and returning sessions skip the landing and go straight to the builder.
+if (parseShareParam(window.location.search)) enterApp();
+
 // ---- auth bootstrap (no-op when Supabase isn't configured) ----
 if (isConfigured()) {
   onAuthChange(async (u) => {

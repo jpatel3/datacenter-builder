@@ -3,7 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Data Center Builder — Playground</title>
+    <title>Data Center Builder — learn what it takes to run AI</title>
+    <meta name="description" content="A free, open-source game to learn what goes into building AI data centers — chips, power, cooling, networking — and the cost of running models like ChatGPT, Midjourney, DeepSeek, and Llama." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Data Center Builder" />
+    <meta property="og:description" content="Build the infrastructure behind AI — and learn what it takes to run ChatGPT, Midjourney, DeepSeek, and Llama." />
+    <meta property="og:url" content="https://jpatel3.github.io/datacenter-builder/" />
+    <meta property="og:image" content="https://jpatel3.github.io/datacenter-builder/board.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="logo.png" />
     <style>
       :root {
         --bg: #0f1419; --panel: #1a212b; --panel2: #222c38; --line: #2d3a48;
@@ -127,9 +135,54 @@
       .share-banner { background: rgba(78,161,255,.12); border: 1px solid var(--accent); border-radius: 9px; padding: 10px 14px; margin: 0 24px 12px; }
       .share-banner button { background: var(--accent); border: none; color: #04121f; font-weight: 600; border-radius: 7px; padding: 6px 12px; cursor: pointer; margin-left: 8px; }
       .share-banner button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font-weight: 400; }
+      /* ---- landing page ---- */
+      #landing { max-width: 1000px; margin: 0 auto; padding: 52px 24px 64px; }
+      .lp-hero { text-align: center; }
+      .lp-logo { border-radius: 18px; }
+      .lp-title { font-size: 40px; line-height: 1.12; margin: 18px 0 10px; }
+      .lp-sub { color: var(--muted); font-size: 17px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+      .lp-sub strong { color: var(--text); font-weight: 600; }
+      .lp-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 26px 0 8px; }
+      .lp-btn { background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 11px 18px; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; }
+      .lp-btn:hover { border-color: var(--accent); }
+      .lp-primary { background: var(--accent); border-color: var(--accent); color: #04121f; font-weight: 600; }
+      .lp-ghost { color: var(--accent); }
+      .lp-note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+      .lp-shot { display: block; width: 100%; max-width: 920px; margin: 36px auto; border: 1px solid var(--line); border-radius: 12px; }
+      .lp-features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 8px 0; }
+      .lp-feat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+      .lp-feat .lp-ic { font-size: 22px; }
+      .lp-feat h3 { margin: 8px 0 4px; font-size: 15px; }
+      .lp-feat p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+      .lp-foot { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+      .lp-foot a { color: var(--accent); }
+      @media (max-width: 800px) { .lp-features { grid-template-columns: 1fr 1fr; } .lp-title { font-size: 31px; } }
+      @media (max-width: 480px) { .lp-features { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
+    <section id="landing">
+      <div class="lp-hero">
+        <img class="lp-logo" src="logo.png" alt="Data Center Builder logo" width="76" height="76" />
+        <h1 class="lp-title">Build the infrastructure behind AI</h1>
+        <p class="lp-sub">A free, open-source game where you assemble real data centers — chips, power, cooling, networking, land — and learn what it actually takes to run <strong>ChatGPT</strong>, <strong>Midjourney</strong>, <strong>DeepSeek</strong>, and <strong>Llama</strong>.</p>
+        <div class="lp-cta">
+          <button id="enter" class="lp-btn lp-primary">Start the course →</button>
+          <button id="enter-sandbox" class="lp-btn">Open the sandbox</button>
+          <a class="lp-btn lp-ghost" href="https://github.com/jpatel3/datacenter-builder" target="_blank" rel="noopener noreferrer">★ GitHub</a>
+        </div>
+        <p class="lp-note">No sign-up needed to play · sign in with GitHub to save &amp; share your builds</p>
+      </div>
+      <img class="lp-shot" src="board.png" alt="The Data Center Builder infrastructure board" loading="lazy" />
+      <div class="lp-features">
+        <div class="lp-feat"><div class="lp-ic">🧩</div><h3>Learn by building</h3><p>Drop in parts and watch live power, heat, cost, and capacity react.</p></div>
+        <div class="lp-feat"><div class="lp-ic">🔗</div><h3>Training vs inference</h3><p>Feel why training needs a fast cluster network — and serving barely does.</p></div>
+        <div class="lp-feat"><div class="lp-ic">🖼️</div><h3>Text vs image</h3><p>See an image-generation request cost roughly 20× a text reply.</p></div>
+        <div class="lp-feat"><div class="lp-ic">💸</div><h3>Real chips, real costs</h3><p>NVIDIA, AMD, AWS, Google — compared on cost per million tokens.</p></div>
+      </div>
+      <p class="lp-foot">Open source · built in the open · <a href="https://github.com/jpatel3/datacenter-builder" target="_blank" rel="noopener noreferrer">contribute on GitHub ↗</a></p>
+    </section>
+    <div id="app" style="display:none">
     <header>
       <div id="auth" class="auth"></div>
       <h1>Data Center Builder — Playground</h1>
@@ -169,6 +222,7 @@
       <p><strong>About this project.</strong> Data Center Builder is a free, open-source learning game about what actually goes into building AI data centers — chips, racks, power, cooling, networking, and land — and how those choices trade off on cost, capacity, and the difference between training vs. inference and text vs. image workloads. It's aimed at curious students and early-career tech folks who want an intuition for the infrastructure behind tools like ChatGPT, Midjourney, DeepSeek, and Llama. Numbers and vendor names are realistic-ish but simplified for learning — not engineering-grade accuracy.</p>
       <p>Built in the open. Issues, ideas, and pull requests are welcome → <a href="https://github.com/jpatel3/datacenter-builder" target="_blank" rel="noopener noreferrer">github.com/jpatel3/datacenter-builder ↗</a></p>
     </footer>
+    </div>
     <div id="detail-backdrop"></div>
     <aside id="detail-panel" aria-hidden="true"></aside>
     <script type="module" src="/src/main.ts"></script>
